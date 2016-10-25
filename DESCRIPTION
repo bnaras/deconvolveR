@@ -1,0 +1,22 @@
+Package: deconvolveR
+Title: Empirical Bayes Estimation Strategies
+Version: 1.0
+VignetteBuilder: knitr
+Suggests: knitr, rmarkdown
+Authors@R: c(person("Bradley", "Efron", role=c("aut"),
+	   	    email = "brad@stat.stanford.edu"),
+  	     person("Balasubramanian", "Narasimhan", role=c("aut", "cre"),
+	   	    email = "naras@stat.Stanford.EDU"))
+Description: Empirical Bayes methods for learning prior distributions from
+    statistical observations. This is the bayes deconvolution problem and here we
+    use a parametric (rather than nonparametric) approach to g-modeling.
+URL: http://github.com/bnaras/deconvolveR
+BugReports: http://github.com/bnaras/deconvolveR/issues
+Depends:
+    R (>= 3.0)
+License: GPL (>= 2)
+LazyData: true
+Imports:
+    splines,
+    stats
+RoxygenNote: 5.0.1
