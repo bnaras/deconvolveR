@@ -3,7 +3,7 @@
 #' @importFrom splines ns
 #' @importFrom stats nlm dpois dnorm dbinom
 #' @param tau a vector of (implicitly m) discrete support points for \eqn{\theta}
-#' @param x the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
+#' @param X the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
 #'        a 2-d matrix with rows consisting of pairs, trial size, \eqn{n_i}, and number of successes,
 #'        \eqn{X_i}, for Binomial
 #' @param Q the Q matrix, implies y and P are supplied as well
@@ -53,7 +53,7 @@
 #' data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
 #'            mean = 100 * mean, sd = 100 * sd, cv = sd / mean)
 #'            c0 = 1))
-deconv <- function(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
+deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
                    ignoreZero = TRUE, deltaAt = NULL, c0 = 1,
                    scale = TRUE,
                    pDegree = 5,
@@ -62,7 +62,7 @@ deconv <- function(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
     if (missing(Q) && missing(P)) {
         family <- match.arg(family)
 
-        nTau <- length(tau)
+        m <- length(tau)
 
         if (family == "Poisson") {
             if (ignoreZero) {
@@ -75,16 +75,16 @@ deconv <- function(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
             }
 
             if (missing(y)) {
-                y <- sapply(x0, function(i) sum(x == i))
+                y <- sapply(x0, function(i) sum(X == i))
             }
 
-            ##Q <- cbind(sqrt((nTau - 1) / (nTau)), scale(splines::ns(tau, pDegree)))
+            ##Q <- cbind(sqrt((m - 1) / (m)), scale(splines::ns(tau, pDegree)))
             Q <- cbind(1.0, scale(splines::ns(tau, pDegree), center = TRUE, scale = FALSE))
             Q <- apply(Q, 2, function(w) w / sqrt(sum(w * w)))
 
         } else if (family == "Normal") {
             ## x is the z scores
-            r <- round(range(x), digits = 1)
+            r <- round(range(X), digits = 1)
             xBin <- seq(from = r[1], to = r[2], length.out = n)
             xBinDropFirst <- xBin[-1]
             xBinDropLast <- xBin[-length(xBin)]
@@ -93,7 +93,7 @@ deconv <- function(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
                         function(x) pnorm(q = xBinDropFirst, mean = x) -
                                     pnorm(q = xBinDropLast, mean = x)
                         )
-            intervals <- findInterval(x, vec = xBin)
+            intervals <- findInterval(X, vec = xBin)
             y <- sapply(seq_len(n-1), function(w) sum(intervals == w))
 
             if (scale) {
@@ -116,7 +116,7 @@ deconv <- function(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
 
             ## x is 2-d: n_i, s_i
             P <- sapply(tau,
-                        function(w)  dbinom(x[, 2], size = x[, 1], prob = w))
+                        function(w)  dbinom(X[, 2], size = X[, 1], prob = w))
             y <- 1
 
         }

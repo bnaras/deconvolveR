@@ -41,7 +41,7 @@ generated as follows.
 ```{r}
 set.seed(238923) ## for reproducibility
 N <- 1000
-theta <- rchisq(N,  df = 10)
+Theta <- rchisq(N,  df = 10)
 ```
 
 Next, the $X_i|\Theta_i$, for each of `nSIM = 1000` simulations can
@@ -49,7 +49,7 @@ be generated as below.
 
 ```{r}
 nSIM <- 1000
-data <- sapply(seq_len(nSIM), function(x) rpois(n = N, lambda = theta))
+data <- sapply(seq_len(nSIM), function(x) rpois(n = N, lambda = Theta))
 ```
 
 We take the discrete set $\mathcal{T}=(1, 2, \ldots, 32)$ as the
@@ -60,7 +60,7 @@ $\Theta$-space and apply the `deconv` function in the package
 library(deconvolveR)
 tau <- seq(1, 32)
 results <- apply(data, 2,
-                 function(x) deconv(tau = tau, x = x, ignoreZero = FALSE,
+                 function(x) deconv(tau = tau, X = x, ignoreZero = FALSE,
                                     c0 = 1))
 ```
 
@@ -74,14 +74,17 @@ but they are mostly inconsequential.
 
 Since `deconv` works on a sample at a time, the result above is a list
 of lists from which various statistics can be extracted.  Below, we
-construct a table of values for various values of $\theta$.
+construct a table of values for various values of $\Theta$.
 
 ```{r}
 g <- sapply(results, function(x) x$stats[, "g"])
 mean <- apply(g, 1, mean)
-sd <- apply(g, 1, sd)
+SE.g <- sapply(results, function(x) x$stats[, "SE.g"])
+sd <- apply(SE.g, 1, mean)
+Bias.g <- sapply(results, function(x) x$stats[, "Bias.g"])
+bias <- apply(Bias.g, 1, mean)
 table1 <- data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
-                     mean = 100 * mean, sd = 100 * sd, cv = sd / mean)
+                     Mean = 100 * mean, StdDev = 100 * sd, Bias = 100* bias, CoefVar = sd / mean)
 ```
 
 The table below summarizes the results for some chosen values of
@@ -145,7 +148,7 @@ The `stats` list contains other estimates quantities as well.
 
 As noted in the paper citing this package, about
 `r 100 * round(stats[161, "G"], 2)` percent of the total mass of
-$\hat(g)$ lies below $\Theta = 1$, which is an underestimate. This can
+$\hat{g}$ lies below $\Theta = 1$, which is an underestimate. This can
 be corrected for by defining
 $$
 \tilde{g} = c_1\hat{g} / (1 - e^{-\theta_j}),
@@ -268,7 +271,7 @@ data <- local({
 })
 ```
 
-Below is a histogram of the data and that of the thetas.
+Below is a histogram of the data ($z$ values) and that of the $\Theta$s.
 
 ```{r}
 p1 <- ggplot(mapping = aes(x = data$z)) +
@@ -282,13 +285,14 @@ p2 <- ggplot(mapping = aes(x = data$mu)) +
 plot_grid(plotlist = list(p1, p2), ncol = 2)
 ```
 
-Now we deconvolve this using $\tau = (-6, -5.75,\ldots, 3)$ and a
+Now we deconvolve this using $\mathcal{T} = (-6, -5.75,\ldots, 3)$ and a
 spike at zero and a fifth-degree polynomial.
 
 
 ```{r}
 tau <- seq(from = -6, to = 3, by = 0.25)
-result <- deconv(tau = tau, x = data$z, deltaAt = 0, family = "Normal", pDegree = 5)
+atomIndex <- which(tau == 0)
+result <- deconv(tau = tau, X = data$z, deltaAt = 0, family = "Normal", pDegree = 5)
 ```
 
 The estimates and the standard errors of the penalized MLE $\hat{g}$
@@ -298,14 +302,14 @@ with `c0 = 1` are shown below.
 knitr::kable(result$stats)
 ```
 
-Per the above table, the estimated probability of $\mu = 0$ is `r round(result$stats[25, "g"], 3)`
-$\pm$ `r round(result$stats[25, "SE.g"] , 3)`  with a bias of
-about `r round(result$stats[25, "Bias.g"] , 3)`.
+Per the above table, the estimated probability of $\mu = 0$ is `r round(result$stats[atomIndex, "g"], 3)`
+$\pm$ `r round(result$stats[atomIndex, "SE.g"] , 3)`  with a bias of
+about `r round(result$stats[atomIndex, "Bias.g"] , 3)`.
 
 We can now plot the $g$-estimate removing the atom at 0.
 
 ```{r}
-gData <- as.data.frame(result$stats[-25, c("theta", "g")])
+gData <- as.data.frame(result$stats[-atomIndex, c("theta", "g")])
 gData$g <- gData$g / sum(gData$g)
 ggplot(data = gData) +
     geom_line(mapping = aes(x = theta, y = g)) +
@@ -354,28 +358,34 @@ Bayes.up <- c(0.5 * (xlim[1] - 3) + 1.96 / sqrt(2), 0.5 * (xlim[2] - 3) + 1.96 /
 4. Compute the estimated posterior density for of $\mu$ given $z$.
 
 ```{r, eval = FALSE}
-w <- data[order(data$z), ]
-zGrid <- w$z
-gD <- result$stats$mat
-mus <- sort(c(0, data$mu[9001:10000]))
-closestG <- approx(x = gD[, "theta"], y = gD[, "g"], xout = mus)$y
-gHat <- sapply(seq_len(length(mus)), function(i) dnorm(tau, mean = mus[i]) * closestG[i])
-gHat <- apply(gHat, 2, function(x) cumsum(x) / sum(x))
+d <- data[order(data$mu), ]
+r2 <- deconv(tau = d$mu, X = data$z, deltaAt = 0, family = "Normal", pDegree = 5)
 
-gGivenZCDF <- function(x, z, g, theta) {
-    sum(g * pnorm(x, mean =  z - theta))
-}
-gGivenZQuantile <- function(p, z) {
-    uniroot(f = function(x) { gGivenZCDF(x, z, g = gDist[, "g"], theta = gDist[, "theta"]) - p },
-            interval = c(-10, 10))$root
+d$gMu <- approx(x = result$stats[, "theta"], y = result$stats[, "g"], xout = d$mu)$y
+
+r <- t(sapply(tau, function(z) {
+    gD <- dnorm(z, mean = d$mu) * dnorm(x = d$mu, mean = z)
+    cumsum(gD) / sum(gD)
+}))[, -c(1:2)]
+
+findQuantile <- function(G) {
+    approx(x = G,
+           y = tau,
+           xout = c(0.025, y = 0.975))$y
 }
 
-gQuantiles <- t(sapply(zGrid,
-                       function(x) c(gGivenZQuantile(p = 0.025, z = x),
-                                     gGivenZQuantile(p = 0.975, z = x))
-                       ))
+gQuantiles <- apply(r, 2, findQuantile)
+
+d025 <- data.frame(z = d$z[-(1:2)], mu = gQuantiles[1, ])
+d025 <- d025[order(d025$z), ]
+d975 <- data.frame(z = d$z[-(1:2)], mu = gQuantiles[2, ])
+d975 <- d975[order(d975$z), ]
+
+plot(d025$z, d025$mu, type="l")
+plot(d975$z, d975$mu, type="l")
 
 ```
+
 
 
 5. Plot it
@@ -433,7 +443,7 @@ freedom.
 tau <- seq(from = -4, to = 6, by = 0.2)
 plots1 <- lapply(2:7,
                  function(p) {
-                     result <- deconv(tau = tau, x = z, family = "Normal", pDegree = p)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = p)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = z)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -443,7 +453,7 @@ plots1 <- lapply(2:7,
                  })
 plots2 <- lapply(2:7,
                  function(p) {
-                     result <- deconv(tau = tau, x = z, family = "Normal", pDegree = p)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = p)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = normEx2$theta)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -462,7 +472,7 @@ regularization parameter $c0$.
 ```{r, fig.keep='all', fig.width=7.5, fig.height=10}
 plots1 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  function(c0) {
-                     result <- deconv(tau = tau, x = z, family = "Normal", pDegree = 6, c0 = c0)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = z)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -472,7 +482,7 @@ plots1 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  })
 plots2 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  function(c0) {
-                     result <- deconv(tau = tau, x = z, family = "Normal", pDegree = 6, c0 = c0)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = normEx2$theta)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -498,14 +508,14 @@ We assume a binomial model with $X_i \sim Binomial(n_i, \theta_i)$
 with $\theta_i$ being the probability of any one satellite site being
 malignant for the $i$th patient.
 
-We take $\tau = (0.01, 0.02,\ldots, 0.09)$, so $m = 99.$  We take $Q$
+We take $\mathcal{T} = (0.01, 0.02,\ldots, 0.09)$, so $m = 99.$  We take $Q$
 to be a 5-degree natural spline with columns standardized to mean 0 and
 sum of squares equal to 1. The penalization parameter is set to 1. The
 figure below shows the estimated prior density of $g(\theta)$.
 
 ```{r}
 tau <- seq(from = 0.01, to = 0.99, by = 0.01)
-result <- deconv(tau = tau, x = surg, family = "Binomial", c0 = 1)
+result <- deconv(tau = tau, X = surg, family = "Binomial", c0 = 1)
 d <- data.frame(result$stats)
 indices <- seq(5, 99, 5)
 errorX <- tau[indices]
@@ -541,7 +551,6 @@ B <- 1000
 gHat <- d$g
 N <- nrow(surg)
 
-
 genBootSample <- function() {
     thetaStar <- sample(tau, size = N, replace = TRUE, prob = gHat)
     sStar <- sapply(seq_len(N),
@@ -551,9 +560,9 @@ genBootSample <- function() {
 }
 
 bootResults <- lapply(seq_len(B),
-                      function(x) {
+                      function(k) {
                           surgBoot <- genBootSample()
-                          mat <- deconv(tau = tau, x = surgBoot, family = "Binomial", c0 = 1)$stats
+                          mat <- deconv(tau = tau, X = surgBoot, family = "Binomial", c0 = 1)$stats
                           mat[, c("g", "Bias.g")]
                       })
 
@@ -564,7 +573,7 @@ indices <- c(seq(1, 99, 11), 99)
 
 table2 <- data.frame(theta = tau,
                      gTheta = round(gHat * 100, 3),
-                     sdFormula = round(sqrt(diag(result$cov.g)) * 100, 3),
+                     sdFormula = round(d$SE.g * 100, 3),
                      sdSimul = round(apply(gBoot, 1, sd) * 100, 3),
                      BiasFormula = round(d$Bias.g * 100, 3),
                      BiasSimul = round(apply(BiasBoot, 1, mean) * 100, 3))[ indices, ]
@@ -574,7 +583,7 @@ table2 <- data.frame(theta = tau,
 We print out some estimated quantities for comparison.
 
 ```{r}
-knitr::kable(table2)
+knitr::kable(table2, row.names = FALSE)
 ```
 
 
