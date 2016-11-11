@@ -4,20 +4,22 @@
 \alias{deconv}
 \title{A function to compute Empirical Bayes estimates using deconvolution}
 \usage{
-deconv(tau, x, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
+deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
   ignoreZero = TRUE, deltaAt = NULL, c0 = 1, scale = TRUE,
   pDegree = 5, aStart = 1, ...)
 }
 \arguments{
 \item{tau}{a vector of (implicitly m) discrete support points for \eqn{\theta}}
 
-\item{x}{the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
+\item{X}{the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
 a 2-d matrix with rows consisting of pairs, trial size, \eqn{n_i}, and number of successes,
-\eqn{X_i}, for Binomial}
+\eqn{X_i}, for Binomial. See details below}
 
-\item{Q}{the Q matrix, implies y and P are supplied as well}
+\item{y}{the multinomial counts. See details below}
 
-\item{P}{the P matrix, implies Q and y are supplied as well}
+\item{Q}{the Q matrix, implies y and P are supplied as well; see details below}
+
+\item{P}{the P matrix, implies Q and y are supplied as well; see details below}
 
 \item{n}{the number of bins in the discretization (default 40)}
 
@@ -25,7 +27,7 @@ a 2-d matrix with rows consisting of pairs, trial size, \eqn{n_i}, and number of
 with \code{"Poisson"}, the default}
 
 \item{ignoreZero}{if the zero values should be ignored (default = \code{TRUE}). Applies to
-Poisson only.}
+Poisson only and has the effect of adjusting \code{P} for the truncation at zero}
 
 \item{deltaAt}{the theta value where a delta function is desired (default \code{NULL}). Applies to
 Normal only if non-null}
@@ -57,21 +59,23 @@ a list of 9 items consisting of
 \description{
 A function to compute Empirical Bayes estimates using deconvolution
 }
+\section{Details}{
+
+The data \code{X} is always required with two exceptions. In the Poisson case,
+\code{y} alone may be specified and \code{X} omitted, in which case the sample space of
+the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The second exception is
+for experimentation with other exponential families besides the three implemented here:
+\code{y}, \code{P} and \code{Q} can be specified together.
+}
 \examples{
 set.seed(238923) ## for reproducibility
 N <- 1000
 theta <- rchisq(N,  df = 10)
-nSIM <- 50
-data <- sapply(seq_len(nSIM), function(x) rpois(n = N, lambda = theta))
+X <- rpois(n = N, lambda = theta)
 tau <- seq(1, 32)
-results <- apply(data, 2,
-                 function(x) deconv(theta = tau, x = x, ignoreZero = FALSE,
-stats <- sapply(results, function(x) x$stats[, "g"])
-mean <- apply(stats, 1, mean)
-sd <- apply(stats, 1, sd)
-data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
-           mean = 100 * mean, sd = 100 * sd, cv = sd / mean)
-           c0 = 1))
+result <- deconv(tau = tau, X = X, ignoreZero = FALSE)
+print(result$stats)
+
 }
 \references{
 Bradley Efron. Empirical Bayes Deconvolution Estimates. Biometrika 103(1), 1-20,

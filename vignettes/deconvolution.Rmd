@@ -422,12 +422,12 @@ alongside a histogram of the data, generated using $X_i \sim
 N(\theta_i, 1)$.
 
 ```{r}
-p1 <- ggplot(mapping = aes(x = normEx2$theta)) +
+p1 <- ggplot(mapping = aes(x = disjointTheta)) +
     geom_histogram(mapping = aes(y  = ..count.. / sum(..count..) ),
                    color = "brown", bins = 60, alpha = 0.5) +
     labs(x = expression(theta), y = "Density")
 set.seed (2332)
-z <- rnorm(n = length(normEx2$theta), mean = normEx2$theta)
+z <- rnorm(n = length(disjointTheta), mean = disjointTheta)
 p2 <- ggplot(mapping = aes(x = z)) +
     geom_histogram(mapping = aes(y  = ..count.. / sum(..count..) ),
                    color = "brown", bins = 60, alpha = 0.5) +
@@ -455,7 +455,7 @@ plots2 <- lapply(2:7,
                  function(p) {
                      result <- deconv(tau = tau, X = z, family = "Normal", pDegree = p)
                      g <- result$stats[, "g"]
-                     ggplot(mapping = aes(x = normEx2$theta)) +
+                     ggplot(mapping = aes(x = disjointTheta)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
                                         color = "brown", bins = 60, alpha = 0.2) +
                          geom_line(mapping = aes(x = tau, y = g), color = "blue") +
@@ -484,7 +484,7 @@ plots2 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  function(c0) {
                      result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)
                      g <- result$stats[, "g"]
-                     ggplot(mapping = aes(x = normEx2$theta)) +
+                     ggplot(mapping = aes(x = disjointTheta)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
                                         color = "brown", bins = 60, alpha = 0.2) +
                          geom_line(mapping = aes(x = tau, y = g), color = "blue") +

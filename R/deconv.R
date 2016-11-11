@@ -1,19 +1,20 @@
 #' A function to compute Empirical Bayes estimates using deconvolution
 #'
 #' @importFrom splines ns
-#' @importFrom stats nlm dpois dnorm dbinom
+#' @importFrom stats nlm dpois dnorm dbinom pnorm
 #' @param tau a vector of (implicitly m) discrete support points for \eqn{\theta}
 #' @param X the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
 #'        a 2-d matrix with rows consisting of pairs, trial size, \eqn{n_i}, and number of successes,
-#'        \eqn{X_i}, for Binomial
-#' @param Q the Q matrix, implies y and P are supplied as well
-#' @param P the P matrix, implies Q and y are supplied as well
+#'        \eqn{X_i}, for Binomial. See details below
+#' @param y the multinomial counts. See details below
+#' @param Q the Q matrix, implies y and P are supplied as well; see details below
+#' @param P the P matrix, implies Q and y are supplied as well; see details below
 #' @param n the number of bins in the discretization (default 40)
 #' @param c0 the regularization parameter (default 1)
 #' @param family the exponential family, one of \code{c("Poisson", "Normal", "Binomial")}
 #'        with \code{"Poisson"}, the default
 #' @param ignoreZero if the zero values should be ignored (default = \code{TRUE}). Applies to
-#'        Poisson only.
+#'        Poisson only and has the effect of adjusting \code{P} for the truncation at zero
 #' @param deltaAt the theta value where a delta function is desired (default \code{NULL}). Applies to
 #'        Normal only if non-null
 #' @param scale if the Q matrix should be scaled so that the spline basis has mean 0 and columns
@@ -32,6 +33,14 @@
 #'            \eqn{G} (the cdf of {g}), std. error of \eqn{G}, and the bias of \eqn{g}}
 #' \item{loglik}{the negative log-likelihood function for the data taking a \eqn{p}-vector argument}
 #' \item{statsFunction}{a function to compute the statistics returned above}
+#'
+#' @section Details:
+#' The data \code{X} is always required with two exceptions. In the Poisson case,
+#' \code{y} alone may be specified and \code{X} omitted, in which case the sample space of
+#' the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The second exception is
+#' for experimentation with other exponential families besides the three implemented here:
+#' \code{y}, \code{P} and \code{Q} can be specified together.
+#'
 #' @export
 #' @references Bradley Efron. Empirical Bayes Deconvolution Estimates. Biometrika 103(1), 1-20,
 #' ISSN 0006-3444. doi:10.1093/biomet/asv068.
@@ -42,28 +51,20 @@
 #' set.seed(238923) ## for reproducibility
 #' N <- 1000
 #' theta <- rchisq(N,  df = 10)
-#' nSIM <- 50
-#' data <- sapply(seq_len(nSIM), function(x) rpois(n = N, lambda = theta))
+#' X <- rpois(n = N, lambda = theta)
 #' tau <- seq(1, 32)
-#' results <- apply(data, 2,
-#'                  function(x) deconv(theta = tau, x = x, ignoreZero = FALSE,
-#' stats <- sapply(results, function(x) x$stats[, "g"])
-#' mean <- apply(stats, 1, mean)
-#' sd <- apply(stats, 1, sd)
-#' data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
-#'            mean = 100 * mean, sd = 100 * sd, cv = sd / mean)
-#'            c0 = 1))
+#' result <- deconv(tau = tau, X = X, ignoreZero = FALSE)
+#' print(result$stats)
+#'
 deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
                    ignoreZero = TRUE, deltaAt = NULL, c0 = 1,
                    scale = TRUE,
                    pDegree = 5,
                    aStart = 1.0, ...) {
 
+    family <- match.arg(family)
     if (missing(Q) && missing(P)) {
-        family <- match.arg(family)
-
         m <- length(tau)
-
         if (family == "Poisson") {
             if (ignoreZero) {
                 x0 <- seq_len(n)
@@ -71,13 +72,12 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
                 P <- sapply(tau, function(x) dpois(x = x0, lambda = x) / (1 - exp(-x)) )
             } else {
                 x0 <- seq.int(from = 0, to = n - 1)
-                P <- sapply(tau, function(x) dpois(x = x0, lambda = x) )
+                P <- sapply(tau, function(w) dpois(x = x0, lambda = w) )
             }
 
             if (missing(y)) {
                 y <- sapply(x0, function(i) sum(X == i))
             }
-
             ##Q <- cbind(sqrt((m - 1) / (m)), scale(splines::ns(tau, pDegree)))
             Q <- cbind(1.0, scale(splines::ns(tau, pDegree), center = TRUE, scale = FALSE))
             Q <- apply(Q, 2, function(w) w / sqrt(sum(w * w)))
@@ -121,8 +121,8 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
 
         }
     } else { ## user specified Q or  P
-        if (missing(y) || missing(P) || missing(Q)) {
-            stop("P, Q, and y must be specified together!")
+        if (!missing(X) || missing(y) || missing(P) || missing(Q)) {
+            stop("P, Q, and y (but not X) must be specified together!")
         }
     }
 
