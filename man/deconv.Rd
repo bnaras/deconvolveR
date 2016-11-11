@@ -9,52 +9,60 @@ deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
   pDegree = 5, aStart = 1, ...)
 }
 \arguments{
-\item{tau}{a vector of (implicitly m) discrete support points for \eqn{\theta}}
+\item{tau}{a vector of (implicitly m) discrete support points for
+\eqn{\theta}}
 
-\item{X}{the vector of sample values: a vector of counts for Poisson, a vector of z-scores for Normal,
-a 2-d matrix with rows consisting of pairs, trial size, \eqn{n_i}, and number of successes,
-\eqn{X_i}, for Binomial. See details below}
+\item{X}{the vector of sample values: a vector of counts for
+Poisson, a vector of z-scores for Normal, a 2-d matrix with
+rows consisting of pairs, (trial size \eqn{n_i}, number of
+successes \eqn{X_i}) for Binomial. See details below}
 
 \item{y}{the multinomial counts. See details below}
 
-\item{Q}{the Q matrix, implies y and P are supplied as well; see details below}
+\item{Q}{the Q matrix, implies y and P are supplied as well; see
+details below}
 
-\item{P}{the P matrix, implies Q and y are supplied as well; see details below}
+\item{P}{the P matrix, implies Q and y are supplied as well; see
+details below}
 
 \item{n}{the number of bins in the discretization (default 40)}
 
-\item{family}{the exponential family, one of \code{c("Poisson", "Normal", "Binomial")}
-with \code{"Poisson"}, the default}
+\item{family}{the exponential family, one of \code{c("Poisson",
+"Normal", "Binomial")} with \code{"Poisson"}, the default}
 
-\item{ignoreZero}{if the zero values should be ignored (default = \code{TRUE}). Applies to
-Poisson only and has the effect of adjusting \code{P} for the truncation at zero}
+\item{ignoreZero}{if the zero values should be ignored (default =
+\code{TRUE}). Applies to Poisson only and has the effect of
+adjusting \code{P} for the truncation at zero}
 
-\item{deltaAt}{the theta value where a delta function is desired (default \code{NULL}). Applies to
-Normal only if non-null}
+\item{deltaAt}{the theta value where a delta function is desired
+(default \code{NULL}). Applies to Normal only if non-null}
 
 \item{c0}{the regularization parameter (default 1)}
 
-\item{scale}{if the Q matrix should be scaled so that the spline basis has mean 0 and columns
-sum of squares to be one, (default \code{TRUE})}
+\item{scale}{if the Q matrix should be scaled so that the spline
+basis has mean 0 and columns sum of squares to be one, (default
+\code{TRUE})}
 
 \item{pDegree}{the degree of the splines to use (default 5)}
 
-\item{aStart}{the starting values for the non-linear optimization, default is a vector of 1s}
+\item{aStart}{the starting values for the non-linear optimization,
+default is a vector of 1s}
 
 \item{...}{further args to function \code{nlm}}
 }
 \value{
-a list of 9 items consisting of
-\item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
-\item{Q}{the m by p matrix Q}
-\item{P}{the n by m matrix P}
-\item{R}{the ratio of artificial to genuine information as per the reference below}
-\item{cov}{the covariance matrix for the mle}
-\item{cov.g}{the covariance matrix for the \eqn{g}}
-\item{mat}{an m by 6 matrix containing columns for \eqn{theta}, \eqn{g}, std. error of \eqn{g},
-           \eqn{G} (the cdf of {g}), std. error of \eqn{G}, and the bias of \eqn{g}}
-\item{loglik}{the negative log-likelihood function for the data taking a \eqn{p}-vector argument}
-\item{statsFunction}{a function to compute the statistics returned above}
+a list of 9 items consisting of \item{mle}{the maximum
+    likelihood estimate \eqn{\hat{\alpha}}} \item{Q}{the m by p
+    matrix Q} \item{P}{the n by m matrix P} \item{R}{the ratio of
+    artificial to genuine information as per the reference below}
+    \item{cov}{the covariance matrix for the mle} \item{cov.g}{the
+    covariance matrix for the \eqn{g}} \item{mat}{an m by 6 matrix
+    containing columns for \eqn{theta}, \eqn{g}, std. error of
+    \eqn{g}, \eqn{G} (the cdf of {g}), std. error of \eqn{G}, and
+    the bias of \eqn{g}} \item{loglik}{the negative log-likelihood
+    function for the data taking a \eqn{p}-vector argument}
+    \item{statsFunction}{a function to compute the statistics
+    returned above}
 }
 \description{
 A function to compute Empirical Bayes estimates using deconvolution
