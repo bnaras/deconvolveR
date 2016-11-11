@@ -64,10 +64,9 @@ results <- apply(data, 2,
                                     c0 = 1))
 ```
 
-The default setting for `deconv` uses the `Poisson` family---the only
-one implemented currently---and a natural cubic spline basis of
-degree 5 as $Q$. The regularization parameter for this example (`c0`)
-is set to 1.
+The default setting for `deconv` uses the `Poisson` family and a
+natural cubic spline basis of degree 5 as $Q.$ The regularization
+parameter for this example (`c0`) is set to 1.
 
 Some warnings are emitted by the `nlm` routine used for optimization,
 but they are mostly inconsequential.
@@ -84,7 +83,8 @@ sd <- apply(SE.g, 1, mean)
 Bias.g <- sapply(results, function(x) x$stats[, "Bias.g"])
 bias <- apply(Bias.g, 1, mean)
 table1 <- data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
-                     Mean = 100 * mean, StdDev = 100 * sd, Bias = 100* bias, CoefVar = sd / mean)
+                     Mean = 100 * mean, StdDev = 100 * sd, Bias = 100* bias,
+                     CoefVar = sd / mean)
 ```
 
 The table below summarizes the results for some chosen values of
@@ -180,7 +180,8 @@ gPost <- sapply(seq_len(100), function(i) local({gt <- gt * result$P[i, ]; gt / 
 plots <- lapply(c(1, 2, 4, 8), function(i) {
     ggplot() +
         geom_line(mapping = aes(x = tau, y = gPost[, i])) +
-        labs(x = expression(theta), y = expression(g(theta)), title = sprintf("x = %d", i))
+        labs(x = expression(theta), y = expression(g(theta)),
+             title = sprintf("x = %d", i))
 })
 plots <- Map(f = function(p, xlim) p + xlim(0, xlim), plots, list(6, 8, 14, 20))
 plot_grid(plotlist = plots, ncol = 2)
@@ -459,7 +460,8 @@ plots2 <- lapply(2:7,
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
                                         color = "brown", bins = 60, alpha = 0.2) +
                          geom_line(mapping = aes(x = tau, y = g), color = "blue") +
-                         labs(x = expression(theta), y = "Density", title = sprintf("DF = %d", p))
+                         labs(x = expression(theta), y = "Density",
+                              title = sprintf("DF = %d", p))
                 })
 plots <- mapply(function(x, y) list(x, y), plots1, plots2)
 plot_grid(plotlist = plots, ncol=2)
@@ -472,7 +474,8 @@ regularization parameter $c0$.
 ```{r, fig.keep='all', fig.width=7.5, fig.height=10}
 plots1 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  function(c0) {
-                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6,
+                                      c0 = c0)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = z)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -482,7 +485,8 @@ plots1 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  })
 plots2 <- lapply(c(0.5, 1, 2, 4, 16, 32),
                  function(c0) {
-                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)
+                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6,
+                                      c0 = c0)
                      g <- result$stats[, "g"]
                      ggplot(mapping = aes(x = disjointTheta)) +
                          geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
@@ -524,19 +528,19 @@ ggplot() +
     geom_errorbar(data = d[indices, ],
                   mapping = aes(x = theta, ymin = g - SE.g, ymax = g + SE.g),
                   width = .01, color = "blue") +
-    labs(y = "g +/- SE")
+    labs(x = expression(theta), y = expression(paste(g(theta), " +/- SE")))
 ```
 
 The complete table of estimates and standard errors is also available.
 
 ```{r}
-knitr::kable(d[indices, ])
+knitr::kable(d[indices, ], row.names = FALSE)
 ```
 
 ### Bootstrap Comparison
 
 As a check on the estimates of standard error and bias provided by
-\code{deconv}, we compare the results with what we obtain using a
+`deconv`, we compare the results with what we obtain using a
 parametric boostrap.
 
 The boostrap is run as follows. For each of 1000 runs, 844 simulated
@@ -562,7 +566,8 @@ genBootSample <- function() {
 bootResults <- lapply(seq_len(B),
                       function(k) {
                           surgBoot <- genBootSample()
-                          mat <- deconv(tau = tau, X = surgBoot, family = "Binomial", c0 = 1)$stats
+                          mat <- deconv(tau = tau, X = surgBoot, family = "Binomial",
+                                        c0 = 1)$stats
                           mat[, c("g", "Bias.g")]
                       })
 
