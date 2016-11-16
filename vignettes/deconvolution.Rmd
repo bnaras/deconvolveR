@@ -82,17 +82,54 @@ SE.g <- sapply(results, function(x) x$stats[, "SE.g"])
 sd <- apply(SE.g, 1, mean)
 Bias.g <- sapply(results, function(x) x$stats[, "Bias.g"])
 bias <- apply(Bias.g, 1, mean)
-table1 <- data.frame(theta = tau, gTheta = 100 * dchisq(tau, df = 10),
-                     Mean = 100 * mean, StdDev = 100 * sd, Bias = 100* bias,
-                     CoefVar = sd / mean)
+gTheta <- pchisq(tau, df = 10) - pchisq(c(0, tau[-length(tau)]), df = 10)
+gTheta <- gTheta / sum(gTheta)
+simData <- data.frame(theta = tau, gTheta = gTheta,
+                      Mean = mean, StdDev = sd, Bias = bias,
+                      CoefVar = sd / mean)
+table1 <- transform(simData,
+                    gTheta = 100 * gTheta,
+                    Mean = 100 * Mean,
+                    StdDev = 100 * StdDev,
+                    Bias = 100 * Bias)
 ```
 
 The table below summarizes the results for some chosen values of
-$\theta$.
+$\theta .$
 
 ```{r}
 knitr::kable(table1[c(5, 10, 15, 20, 25), ], row.names=FALSE)
 ```
+
+Although, the coefficient of variation of $\hat{g}(\theta)$ is still
+large, the $g(\theta)$ estimates are reasonable.
+
+We can compare the empirical standard deviations and biases of
+$g(\hat{\alpha})$ with the approximation given by the formulas in the
+paper.
+
+```{r}
+library(ggplot2)
+library(cowplot)
+theme_set(theme_get() +
+          theme(panel.grid.major = element_line(colour = "gray90",
+                                                size = 0.2),
+                panel.grid.minor = element_line(colour = "gray98",
+                                                size = 0.5)))
+p1 <- ggplot(data = as.data.frame(results[[1]]$stats)) +
+    geom_line(mapping = aes(x = theta, y = SE.g), color = "black", linetype = "solid") +
+    geom_line(mapping = aes(x = simData$theta, y = simData$StdDev), color = "red", linetype = "dashed") +
+    labs(x = expression(theta), y = "Std. Dev")
+
+p2 <- ggplot(data = as.data.frame(results[[1]]$stats)) +
+    geom_line(mapping = aes(x = theta, y = Bias.g), color = "black", linetype = "solid") +
+    geom_line(mapping = aes(x = simData$theta, y = simData$Bias), color = "red", linetype = "dashed") +
+    labs(x = expression(theta), y = "Std. Dev")
+plot_grid(plotlist = list(p1, p2), ncol = 2)
+```
+
+The approximation is quite good for the standard deviations, but a
+little too small for the biases.
 
 ## The Shakespeare data
 
@@ -126,13 +163,6 @@ The plot below shows the Empirical Bayes deconvoluation estimates for
 the Shakerspeare word counts.
 
 ```{r}
-library(ggplot2)
-library(cowplot)
-theme_set(theme_get() +
-          theme(panel.grid.major = element_line(colour = "gray90",
-                                                size = 0.2),
-                panel.grid.minor = element_line(colour = "gray98",
-                                                size = 0.5)))
 ggplot() +
     geom_line(mapping = aes(x = lambda, y = stats[, "g"])) +
     labs(x = expression(log(theta)), y = expression(g(theta)))
@@ -356,38 +386,21 @@ Bayes.lo <- c(0.5 * (xlim[1] - 3) - 1.96 / sqrt(2), 0.5 * (xlim[2] - 3) - 1.96 /
 Bayes.up <- c(0.5 * (xlim[1] - 3) + 1.96 / sqrt(2), 0.5 * (xlim[2] - 3) + 1.96 / sqrt(2))
 ```
 
-4. Compute the estimated posterior density for of $\mu$ given $z$.
+4. Compute the estimated posterior density for of $\mu$ given $z$ and
+   construct the 95% credible intervals for $\mu$ given $z$.
 
-```{r, eval = FALSE}
+```{r}
 d <- data[order(data$mu), ]
-r2 <- deconv(tau = d$mu, X = data$z, deltaAt = 0, family = "Normal", pDegree = 5)
-
-d$gMu <- approx(x = result$stats[, "theta"], y = result$stats[, "g"], xout = d$mu)$y
-
-r <- t(sapply(tau, function(z) {
-    gD <- dnorm(z, mean = d$mu) * dnorm(x = d$mu, mean = z)
-    cumsum(gD) / sum(gD)
-}))[, -c(1:2)]
-
-findQuantile <- function(G) {
-    approx(x = G,
-           y = tau,
-           xout = c(0.025, y = 0.975))$y
-}
-
-gQuantiles <- apply(r, 2, findQuantile)
-
-d025 <- data.frame(z = d$z[-(1:2)], mu = gQuantiles[1, ])
-d025 <- d025[order(d025$z), ]
-d975 <- data.frame(z = d$z[-(1:2)], mu = gQuantiles[2, ])
-d975 <- d975[order(d975$z), ]
-
-plot(d025$z, d025$mu, type="l")
-plot(d975$z, d975$mu, type="l")
-
+muVals <- unique(d$mu)
+s <- as.data.frame(result$stats)
+indices <- findInterval(muVals, s$theta) + 1
+gMu <- s$g[indices]
+st <- seq(min(data$z), -2.0, length.out = 40)
+gMuPhi <- sapply(st, function(z) gMu * dnorm(z - muVals))
+g2 <- apply(gMuPhi, 2, function(x) cumsum(x)/sum(x))
+pct <- apply(g2, 2, function(dist) approx(y = muVals, x = dist, xout = c(0.025, 0.975)))
+qVals <- sapply(pct, function(item) item$y)
 ```
-
-
 
 5. Plot it
 
@@ -403,13 +416,15 @@ ggplot() +
     geom_point(mapping = aes(x = disc$z[disc$nullCase], y = disc$mu[disc$nullCase]),
                              color = "orange") +
     geom_line(mapping = aes(x = rep(zMarker, 2), y = c(-10, 1))) +
-##  geom_line(mapping = aes(x = tau, y = gQuantiles[, 1]), color = "brown") +
-##  geom_line(mapping = aes(x = zGrid, y = gQuantiles[, 2]), color = "brown") +
+    geom_line(mapping = aes(x = st, y = qVals[1, ]), color = "brown") +
+    geom_line(mapping = aes(x = st, y = qVals[2, ]), color = "brown") +
     labs(x = "Observed z", y = expression(mu)) +
     annotate("text", x = -1, y = -4.25, label = "BY.lo") +
     annotate("text", x = -1, y = 1.25, label = "BY.up") +
     annotate("text", x = -7.5, y = -6.1, label = "Bayes.lo") +
     annotate("text", x = -7.5, y = -3.4, label = "Bayes.up") +
+    annotate("text", x = -2.0, y = -1.75, label = "EB.lo") +
+    annotate("text", x = -2.0, y = -3.9, label = "EB.up") +
     annotate("text", x = zMarker, y = 1.25, label = as.character(round(zMarker, 2)))
 ```
 
@@ -512,10 +527,11 @@ We assume a binomial model with $X_i \sim Binomial(n_i, \theta_i)$
 with $\theta_i$ being the probability of any one satellite site being
 malignant for the $i$th patient.
 
-We take $\mathcal{T} = (0.01, 0.02,\ldots, 0.09)$, so $m = 99.$  We take $Q$
-to be a 5-degree natural spline with columns standardized to mean 0 and
-sum of squares equal to 1. The penalization parameter is set to 1. The
-figure below shows the estimated prior density of $g(\theta)$.
+We take $\mathcal{T} = (0.01, 0.02,\ldots, 0.09)$, so $m = 99.$ We
+take $Q$ to be the default 5-degree natural spline with columns
+standardized to mean 0 and sum of squares equal to 1. The penalization
+parameter is set to 1. The figure below shows the estimated prior
+density of $g(\theta)$.
 
 ```{r}
 tau <- seq(from = 0.01, to = 0.99, by = 0.01)

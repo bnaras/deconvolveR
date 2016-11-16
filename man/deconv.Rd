@@ -25,7 +25,12 @@ details below}
 \item{P}{the P matrix, implies Q and y are supplied as well; see
 details below}
 
-\item{n}{the number of bins in the discretization (default 40)}
+\item{n}{the number of support points for X. Applies only to
+Poisson and Normal. In the former, implies that support of X is
+1 to n or 0 to n-1 depending on the \code{ignoreZero} parameter
+below. In the latter, the range of X is divided into n bins to
+construct the multinomial sufficient statistic y (\eqn{y_k} =
+number of X in bin K) described in the references below}
 
 \item{family}{the exponential family, one of \code{c("Poisson",
 "Normal", "Binomial")} with \code{"Poisson"}, the default}
@@ -43,7 +48,8 @@ adjusting \code{P} for the truncation at zero}
 basis has mean 0 and columns sum of squares to be one, (default
 \code{TRUE})}
 
-\item{pDegree}{the degree of the splines to use (default 5)}
+\item{pDegree}{the degree of the splines to use (default 5). In
+notation used in the references below, \eqn{p} = pDegree + 1}
 
 \item{aStart}{the starting values for the non-linear optimization,
 default is a vector of 1s}
@@ -51,18 +57,22 @@ default is a vector of 1s}
 \item{...}{further args to function \code{nlm}}
 }
 \value{
-a list of 9 items consisting of \item{mle}{the maximum
-    likelihood estimate \eqn{\hat{\alpha}}} \item{Q}{the m by p
-    matrix Q} \item{P}{the n by m matrix P} \item{R}{the ratio of
-    artificial to genuine information as per the reference below}
-    \item{cov}{the covariance matrix for the mle} \item{cov.g}{the
-    covariance matrix for the \eqn{g}} \item{mat}{an m by 6 matrix
-    containing columns for \eqn{theta}, \eqn{g}, std. error of
-    \eqn{g}, \eqn{G} (the cdf of {g}), std. error of \eqn{G}, and
-    the bias of \eqn{g}} \item{loglik}{the negative log-likelihood
-    function for the data taking a \eqn{p}-vector argument}
+a list of 9 items consisting of
+    \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
+    \item{Q}{the m by p matrix Q}
+    \item{P}{the n by m matrix P}
+    \item{R}{the ratio of artificial to genuine information
+             per the reference below}
+    \item{cov}{the covariance matrix for the mle}
+    \item{cov.g}{the covariance matrix for the \eqn{g}}
+    \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
+               \eqn{g}, std. error of \eqn{g}, \eqn{G}
+               (the cdf of {g}), std. error of \eqn{G}, and
+               the bias of \eqn{g}}
+    \item{loglik}{the negative log-likelihood function for the
+          data taking a \eqn{p}-vector argument}
     \item{statsFunction}{a function to compute the statistics
-    returned above}
+                         returned above}
 }
 \description{
 A function to compute Empirical Bayes estimates using deconvolution

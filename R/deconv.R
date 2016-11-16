@@ -13,7 +13,12 @@
 #'     details below
 #' @param P the P matrix, implies Q and y are supplied as well; see
 #'     details below
-#' @param n the number of bins in the discretization (default 40)
+#' @param n the number of support points for X. Applies only to
+#'     Poisson and Normal. In the former, implies that support of X is
+#'     1 to n or 0 to n-1 depending on the \code{ignoreZero} parameter
+#'     below. In the latter, the range of X is divided into n bins to
+#'     construct the multinomial sufficient statistic y (\eqn{y_k} =
+#'     number of X in bin K) described in the references below
 #' @param c0 the regularization parameter (default 1)
 #' @param family the exponential family, one of \code{c("Poisson",
 #'     "Normal", "Binomial")} with \code{"Poisson"}, the default
@@ -25,22 +30,27 @@
 #' @param scale if the Q matrix should be scaled so that the spline
 #'     basis has mean 0 and columns sum of squares to be one, (default
 #'     \code{TRUE})
-#' @param pDegree the degree of the splines to use (default 5)
+#' @param pDegree the degree of the splines to use (default 5). In
+#'        notation used in the references below, \eqn{p} = pDegree + 1
 #' @param aStart the starting values for the non-linear optimization,
 #'     default is a vector of 1s
 #' @param ... further args to function \code{nlm}
-#' @return a list of 9 items consisting of \item{mle}{the maximum
-#'     likelihood estimate \eqn{\hat{\alpha}}} \item{Q}{the m by p
-#'     matrix Q} \item{P}{the n by m matrix P} \item{R}{the ratio of
-#'     artificial to genuine information as per the reference below}
-#'     \item{cov}{the covariance matrix for the mle} \item{cov.g}{the
-#'     covariance matrix for the \eqn{g}} \item{mat}{an m by 6 matrix
-#'     containing columns for \eqn{theta}, \eqn{g}, std. error of
-#'     \eqn{g}, \eqn{G} (the cdf of {g}), std. error of \eqn{G}, and
-#'     the bias of \eqn{g}} \item{loglik}{the negative log-likelihood
-#'     function for the data taking a \eqn{p}-vector argument}
+#' @return a list of 9 items consisting of
+#'     \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
+#'     \item{Q}{the m by p matrix Q}
+#'     \item{P}{the n by m matrix P}
+#'     \item{R}{the ratio of artificial to genuine information
+#'              per the reference below}
+#'     \item{cov}{the covariance matrix for the mle}
+#'     \item{cov.g}{the covariance matrix for the \eqn{g}}
+#'     \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
+#'                \eqn{g}, std. error of \eqn{g}, \eqn{G}
+#'                (the cdf of {g}), std. error of \eqn{G}, and
+#'                the bias of \eqn{g}}
+#'     \item{loglik}{the negative log-likelihood function for the
+#'           data taking a \eqn{p}-vector argument}
 #'     \item{statsFunction}{a function to compute the statistics
-#'     returned above}
+#'                          returned above}
 #'
 #' @section Details:
 #' The data \code{X} is always required with two exceptions. In the Poisson case,
@@ -75,16 +85,16 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
         m <- length(tau)
         if (family == "Poisson") {
             if (ignoreZero) {
-                x0 <- seq_len(n)
+                supportOfX <- seq_len(n)
                 ## Accounting for truncation at 0
-                P <- sapply(tau, function(x) dpois(x = x0, lambda = x) / (1 - exp(-x)) )
+                P <- sapply(tau, function(lam) dpois(x = supportOfX, lambda = lam) / (1 - exp(-lam)) )
             } else {
-                x0 <- seq.int(from = 0, to = n - 1)
-                P <- sapply(tau, function(w) dpois(x = x0, lambda = w) )
+                supportOfX <- seq.int(from = 0, to = n - 1)
+                P <- sapply(tau, function(w) dpois(x = supportOfX, lambda = w) )
             }
 
             if (missing(y)) {
-                y <- sapply(x0, function(i) sum(X == i))
+                y <- sapply(supportOfX, function(i) sum(X == i))
             }
             ##Q <- cbind(sqrt((m - 1) / (m)), scale(splines::ns(tau, pDegree)))
             Q <- cbind(1.0, scale(splines::ns(tau, pDegree), center = TRUE, scale = FALSE))
@@ -92,6 +102,7 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
 
         } else if (family == "Normal") {
             ## x is the z scores
+            ## Support of X is the discretized bins
             r <- round(range(X), digits = 1)
             xBin <- seq(from = r[1], to = r[2], length.out = n)
             xBinDropFirst <- xBin[-1]
