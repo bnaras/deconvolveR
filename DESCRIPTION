@@ -7,9 +7,10 @@ Authors@R: c(person("Bradley", "Efron", role=c("aut"),
 	   	    email = "brad@stat.stanford.edu"),
   	     person("Balasubramanian", "Narasimhan", role=c("aut", "cre"),
 	   	    email = "naras@stat.Stanford.EDU"))
-Description: Empirical Bayes methods for learning prior distributions from
-    statistical observations. This is the bayes deconvolution problem and here we
-    use a parametric (rather than nonparametric) approach to g-modeling.
+Description: Empirical Bayes methods for learning prior distributions from data.
+    An unknown prior distribution has yielded (unobservable) parameters, each of
+    which produces a data point from a parametric exponential family. The goal
+    is to estimate the unknown prior ("g-modeling") using Empirical Bayes methods.
 URL: http://github.com/bnaras/deconvolveR
 BugReports: http://github.com/bnaras/deconvolveR/issues
 Depends:
