@@ -10,6 +10,8 @@ examples by installing the package in R thus:
 
 ```
 devtools::install_github("bnaras/deconvolveR")
+library(deconvolveR)
+vignette("deconvolution")
 ```
 
 
