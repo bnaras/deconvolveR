@@ -39,8 +39,9 @@
 #'     \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
 #'     \item{Q}{the m by p matrix Q}
 #'     \item{P}{the n by m matrix P}
-#'     \item{R}{the ratio of artificial to genuine information
-#'              per the reference below}
+#'     \item{S}{the ratio of artificial to genuine information
+#'              per the reference below, where it was referred to as
+#'              \eqn{R(\alpha)}}
 #'     \item{cov}{the covariance matrix for the mle}
 #'     \item{cov.g}{the covariance matrix for the \eqn{g}}
 #'     \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
@@ -165,7 +166,7 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
         g <- g / sum(g)
         G <- cumsum(g)
         f <- as.vector(P %*% g)
-        yHat <- sum(y) * f
+        yHat <- if (length(y) == 1 && y == 1) y else sum(y) * f
         Pt <- P / f
         W <- g * (t(Pt) - 1 )
         qw <- t(Q) %*% W
@@ -194,7 +195,7 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
         se.G <- diag(Cov.G)^.5
         mat <- cbind(tau, g, se.g, G, se.G, bias.g)
         colnames(mat) = c("theta", "g", "SE.g", "G", "SE.G", "Bias.g")
-        list(R = R, cov = Cov, cov.g = Cov.g, mat = mat)
+        list(S = R, cov = Cov, cov.g = Cov.g, mat = mat)
     }
 
     loglik <- function(a) {
@@ -215,12 +216,6 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
         } else {
             attr(value, "gradient") <- - (qw %*% y)  + sDot
         }
-        ## yHat <- sum(y) * f
-        ## ywq <- (yHat * t(W)) %*% Q
-        ## I1 <- qw %*% ywq   ## Fisher Information Matrix I(\alpha)
-        ## sDotDot <- (c0 / aa) * ( diag(length(a)) - outer(a, a) / aa^2 )
-        ## I2 <- solve(I1 + sDotDot)
-        ## attr(value, "hessian") <- -I2
         value
     }
 
@@ -231,7 +226,7 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
     list(mle = mle,
          Q = Q,
          P = P,
-         R = stats$R,
+         S = stats$S,
          cov = stats$cov,
          cov.g = stats$cov.g,
          stats = stats$mat,

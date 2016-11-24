@@ -1,6 +1,6 @@
 Package: deconvolveR
 Title: Empirical Bayes Estimation Strategies
-Version: 1.0-2
+Version: 1.0-3
 VignetteBuilder: knitr
 Suggests: cowplot, ggplot2, knitr, rmarkdown
 Authors@R: c(person("Bradley", "Efron", role=c("aut"),
