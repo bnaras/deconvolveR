@@ -1,5 +1,5 @@
 ---
-title: "Empirical Bayes Deconvolution (Draft)"
+title: "Empirical Bayes Deconvolution"
 author: "Balasubramanian Narasimhan and Bradley Efron"
 date: '`r Sys.Date()`'
 output:
@@ -251,19 +251,45 @@ ggplot(data = d) +
 
 ```
 
-### Fisher comparison
+### Predict ratio of new distinct words
+
+Suppose then that a previously unknown Shakespearean corpus of length
+$t\times C$ were found, $C\times 900,000$ the length of the known
+canon. Assuming a Poisson process model with intensity $\Theta_i$ for
+word $i$, the probability that word $i$ did not appear in the canon
+but does appear in the new corpus is
+$$
+e^{-\Theta_i}\left(1-e^{-\Theta_it}\right);
+$$
+yielding after some work, an estimate for $R(t)$, the expected number of distinct new words found,
+divided by $N$, the observed number of distinct words in the canon:
+$$
+R(t)=\sum_{j=1}^m\hat{g}_jr_j(t),
+$$
+with
+$$
+r_j=\frac{e^{-\theta_{(j)}}}{1-e^{-\theta_{(j)}}}\left(1-e^{-\theta_{(j)}t}\right).
+$$
+
+We can compute the $R(t)$ and plot it as follows.
 
 ```{r}
 gHat <- stats[, "g"]
 Rfn <- function(t) {
     sum( gHat * (1 - exp(-tau * t)) / (exp(tau) - 1) )
 }
-
 r <- sapply(0:10, Rfn)
-
-doublingTime <- uniroot(f = function(x) Rfn(x) - 1, interval = c(2, 4))$root
+ggplot() +
+    geom_line(mapping = aes(x = 0:10, y = r)) +
+    labs(x = "time multiple t", y = expression(R(t)))
 ```
 
+And the (speculative) doubling time for Shakespeare's vocabulary is
+easy to compute too.
+
+```{r}
+print(uniroot(f = function(x) Rfn(x) - 1, interval = c(2, 4))$root)
+```
 
 ## Normal Example
 

@@ -61,8 +61,9 @@ a list of 9 items consisting of
     \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
     \item{Q}{the m by p matrix Q}
     \item{P}{the n by m matrix P}
-    \item{R}{the ratio of artificial to genuine information
-             per the reference below}
+    \item{S}{the ratio of artificial to genuine information
+             per the reference below, where it was referred to as
+             \eqn{R(\alpha)}}
     \item{cov}{the covariance matrix for the mle}
     \item{cov.g}{the covariance matrix for the \eqn{g}}
     \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
