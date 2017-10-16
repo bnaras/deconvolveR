@@ -172,7 +172,7 @@ The quantity $R(\alpha)$ in the paper (Efron, Biometrika 2015) can be
 extracted from the `stats` list; in this case for a regularization
 parameter of `c0=2` we can print its value:
 ```{r}
-print(result$R)
+print(result$S)
 ```
 The `stats` list contains other estimates quantities as well.
 
@@ -577,6 +577,76 @@ The complete table of estimates and standard errors is also available.
 
 ```{r}
 knitr::kable(d[indices, ], row.names = FALSE)
+```
+
+The empirical Bayes estimate of the prior distribution puts most of
+its mass on the small values as can be seem below.
+
+```{r}
+cat(sprintf("Mass below .20 = %0.2f\n", sum(d[1:20, "g"])))
+cat(sprintf("Mass above .80 = %0.2f\n", sum(d[80:99, "g"])))
+```
+
+### Posterior Estimates
+
+The posterior distribution of $\theta_i$ given $(n_i, X_i)$ is
+computed using Bayes rule as
+
+$$
+\hat{g} (\theta | X_i = x_i, n_i) = 
+	\frac{g_{\hat{\alpha}} (\theta) {n_i \choose x_i} 
+	\theta^{x_i} (1 - \theta)^{n_i-x_i}} {f_{\hat{\alpha}}(n_i, x_i)}
+$$ 
+
+where the denominator is given by 
+
+$$
+f_\alpha(n_i, x_i) = \int_0^1{n_i \choose x_i}
+	\theta^{x_i}(1-\theta)^{n_i-x_i}g_\alpha(\theta)\,d\theta.
+$$
+
+with the mle $\hat{\alpha}$ in place of $\alpha$. 
+
+Since $g(\theta)$ is discrete, the integrals are mere sums as shown
+below.
+
+```{r}
+theta <- result$stats[, 'theta']
+gTheta <- result$stats[, 'g']
+
+f_alpha <- function(n_k, x_k) {
+    ## .01 is the delta_theta in the Riemann sum
+    sum(dbinom(x = x_k, size = n_k, prob = theta) * gTheta) * .01
+}
+
+g_theta_hat <- function(n_k, x_k) {
+    gTheta * dbinom(x = x_k, size = n_k, prob = theta) / f_alpha(n_k, x_k)
+}
+```
+
+We plot a few posterior distributions.
+
+```{r}
+g1 <- g_theta_hat(x_k = 7, n_k = 32)
+g2 <- g_theta_hat(x_k = 3, n_k = 6)
+g3 <- g_theta_hat(x_k = 17, n_k = 18)
+
+ggplot() +
+    geom_line(mapping = aes(x = theta, y = g1), col = "magenta") +
+    ylim(0, 10) +
+    geom_line(mapping = aes(x = theta, y = g2), col = "red") +
+    geom_line(mapping = aes(x = theta, y = g3), col = "blue") +
+    labs(x = expression(theta), y = expression(g(paste(theta, "|(x, n)")))) +
+    annotate("text", x = 0.15, y = 4.25, label = "x=7, n=32") +
+    annotate("text", x = 0.425, y = 4.25, label = "x=3, n=6") +
+    annotate("text", x = 0.85, y = 7.5, label = "x=17, n=18") 
+```
+
+The empirical Bayes posterior estimate $\theta^{EB}$ for patients 34,
+40, and 679 in the dataset for example is
+
+```{r}
+cat(sprintf("Empirical Bayes Estimate: %f\n", 0.01 * sum(theta * g2)))
 ```
 
 ### Bootstrap Comparison
