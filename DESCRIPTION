@@ -12,8 +12,8 @@ Description: Empirical Bayes methods for learning prior distributions from data.
     which produces a data point from a parametric exponential family (f). The goal
     is to estimate the unknown prior ("g-modeling") by deconvolution and Empirical
     Bayes methods.
-URL: http://github.com/bnaras/deconvolveR
-BugReports: http://github.com/bnaras/deconvolveR/issues
+URL: https://bnaras.github.io/deconvolveR
+BugReports: https://github.com/bnaras/deconvolveR/issues
 Depends:
     R (>= 3.0)
 License: GPL (>= 2)
@@ -21,4 +21,4 @@ LazyData: true
 Imports:
     splines,
     stats
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.1

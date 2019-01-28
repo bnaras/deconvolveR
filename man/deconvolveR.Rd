@@ -18,4 +18,3 @@ ISSN 0006-3444. doi:10.1093/biomet/asv068.
 Bradley Efron and Trevor Hastie. Computer Age Statistical Inference.
 Cambridge University Press. ISBN 978-1-1-7-14989-2. Chapter 21.
 }
-

@@ -8,4 +8,3 @@
 A set of \eqn{\Theta} values that have a bimodal distribution for testing
 }
 \keyword{data}
-

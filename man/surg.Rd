@@ -17,4 +17,3 @@ Gastric Cancer Resection: An Analysis from the US Gastric Cancer Collaborative.
 J Am Coll Surg. 2015 Aug;221(2):291-9. doi: 10.1016/j.jamcollsurg.2015.04.024.
 }
 \keyword{data}
-

@@ -20,6 +20,7 @@ NULL
 #' doi: 10.1093/biomet/63.3.435.
 #'
 #' @name bardWordCount
+#' @usage data(bardWordCount)
 #' @docType data
 #' @keywords data
 #'
@@ -35,6 +36,7 @@ NULL
 #'
 #' @name surg
 #' @docType data
+#' @usage data(surg)
 #' @keywords data
 #'
 NULL
@@ -43,6 +45,7 @@ NULL
 #'
 #' @name disjointTheta
 #' @docType data
+#' @usage data(disjointTheta)
 #' @keywords data
 #'
 NULL

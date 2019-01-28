@@ -44,7 +44,7 @@
 #'              \eqn{R(\alpha)}}
 #'     \item{cov}{the covariance matrix for the mle}
 #'     \item{cov.g}{the covariance matrix for the \eqn{g}}
-#'     \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
+#'     \item{stats}{an m by 6 matrix containing columns for \eqn{theta},
 #'                \eqn{g}, std. error of \eqn{g}, \eqn{G}
 #'                (the cdf of {g}), std. error of \eqn{G}, and
 #'                the bias of \eqn{g}}
@@ -74,6 +74,22 @@
 #' tau <- seq(1, 32)
 #' result <- deconv(tau = tau, X = X, ignoreZero = FALSE)
 #' print(result$stats)
+#' ##
+#' ## Twin Towers Example
+#' ## See Brad Efron: Bayes, Oracle Bayes and Empirical Bayes
+#' ## disjointTheta is provided by deconvolveR package
+#' theta <- disjointTheta; N <- length(disjointTheta)
+#' z <- rnorm(n = N, mean = disjointTheta)
+#' tau <- seq(from = -4, to = 5, by = 0.2)
+#' result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6)
+#' g <- result$stats[, "g"]
+#' ggplot() +
+#'      geom_histogram(mapping = aes(x = disjointTheta, y  = ..count.. / sum(..count..) ),
+#'                     color = "blue", fill = "red", bins = 40, alpha = 0.5) +
+#'      geom_histogram(mapping = aes(x = z, y  = ..count.. / sum(..count..) ),
+#'                     color = "brown", bins = 40, alpha = 0.5) +
+#'      geom_line(mapping = aes(x = tau, y = g), color = "black") +
+#'      labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)")
 #'
 deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
                    ignoreZero = TRUE, deltaAt = NULL, c0 = 1,

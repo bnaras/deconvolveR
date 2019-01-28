@@ -4,9 +4,9 @@
 \alias{deconv}
 \title{A function to compute Empirical Bayes estimates using deconvolution}
 \usage{
-deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
-  ignoreZero = TRUE, deltaAt = NULL, c0 = 1, scale = TRUE,
-  pDegree = 5, aStart = 1, ...)
+deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal",
+  "Binomial"), ignoreZero = TRUE, deltaAt = NULL, c0 = 1,
+  scale = TRUE, pDegree = 5, aStart = 1, ...)
 }
 \arguments{
 \item{tau}{a vector of (implicitly m) discrete support points for
@@ -66,7 +66,7 @@ a list of 9 items consisting of
              \eqn{R(\alpha)}}
     \item{cov}{the covariance matrix for the mle}
     \item{cov.g}{the covariance matrix for the \eqn{g}}
-    \item{mat}{an m by 6 matrix containing columns for \eqn{theta},
+    \item{stats}{an m by 6 matrix containing columns for \eqn{theta},
                \eqn{g}, std. error of \eqn{g}, \eqn{G}
                (the cdf of {g}), std. error of \eqn{G}, and
                the bias of \eqn{g}}
@@ -86,6 +86,7 @@ the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The seco
 for experimentation with other exponential families besides the three implemented here:
 \code{y}, \code{P} and \code{Q} can be specified together.
 }
+
 \examples{
 set.seed(238923) ## for reproducibility
 N <- 1000
@@ -94,6 +95,22 @@ X <- rpois(n = N, lambda = theta)
 tau <- seq(1, 32)
 result <- deconv(tau = tau, X = X, ignoreZero = FALSE)
 print(result$stats)
+##
+## Twin Towers Example
+## See Brad Efron: Bayes, Oracle Bayes and Empirical Bayes
+## disjointTheta is provided by deconvolveR package
+theta <- disjointTheta; N <- length(disjointTheta)
+z <- rnorm(n = N, mean = disjointTheta)
+tau <- seq(from = -4, to = 5, by = 0.2)
+result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6)
+g <- result$stats[, "g"]
+ggplot() +
+     geom_histogram(mapping = aes(x = disjointTheta, y  = ..count.. / sum(..count..) ),
+                    color = "blue", fill = "red", bins = 40, alpha = 0.5) +
+     geom_histogram(mapping = aes(x = z, y  = ..count.. / sum(..count..) ),
+                    color = "brown", bins = 40, alpha = 0.5) +
+     geom_line(mapping = aes(x = tau, y = g), color = "black") +
+     labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)")
 
 }
 \references{
@@ -104,4 +121,3 @@ ISSN 0006-3444. doi:10.1093/biomet/asv068.
 Bradley Efron and Trevor Hastie. Computer Age Statistical Inference.
 Cambridge University Press. ISBN 978-1-1-7-14989-2. Chapter 21.
 }
-
