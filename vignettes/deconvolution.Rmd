@@ -66,7 +66,11 @@ results <- apply(data, 2,
 
 The default setting for `deconv` uses the `Poisson` family and a
 natural cubic spline basis of degree 5 as $Q.$ The regularization
-parameter for this example (`c0`) is set to 1.
+parameter for this example (`c0`) is set to 1. The `ignoreZero`
+parameter indicates that this dataset contains zero counts, i.e.,
+there zeros have not been truncated. (In the Shakespeare example
+below, the counts are of words seen in the canon, and so there is a
+natural truncation at zero.)
 
 Some warnings are emitted by the `nlm` routine used for optimization,
 but they are mostly inconsequential.
@@ -124,7 +128,7 @@ p1 <- ggplot(data = as.data.frame(results[[1]]$stats)) +
 p2 <- ggplot(data = as.data.frame(results[[1]]$stats)) +
     geom_line(mapping = aes(x = theta, y = Bias.g), color = "black", linetype = "solid") +
     geom_line(mapping = aes(x = simData$theta, y = simData$Bias), color = "red", linetype = "dashed") +
-    labs(x = expression(theta), y = "Std. Dev")
+    labs(x = expression(theta), y = "Bias")
 plot_grid(plotlist = list(p1, p2), ncol = 2)
 ```
 
@@ -160,7 +164,7 @@ stats <- result$stats
 ```
 
 The plot below shows the Empirical Bayes deconvoluation estimates for
-the Shakerspeare word counts.
+the Shakespeare word counts.
 
 ```{r}
 ggplot() +
@@ -185,13 +189,14 @@ $$
 $$
 where $c_1$ is the constant that normalizes $\tilde{g}$.
 
-```{r}
-gt <- stats[, "g"] / (1 - exp(-tau))
-gt <- gt / sum(gt)
-```
+When there is truncation at zero, as is the case here, the
+`deconvolveR` package now returns an additional column in `stats[,
+"tg"]` which contains this correction for _thinning_. (The default
+invocation of `deconv` assumes zero truncation for the Poisson family,
+argument `ignoreZero = FALSE`).
 
 ```{r}
-d <- data.frame(lambda = lambda, g = stats[, "g"], SE.g = stats[, "SE.g"])
+d <- data.frame(lambda = lambda, g = stats[, "g"], tg = stats[, "tg"], SE.g = stats[, "SE.g"])
 indices <- seq(1, length(lambda), 5)
 ggplot(data = d) +
     geom_line(mapping = aes(x = lambda, y = g)) +
@@ -200,13 +205,13 @@ ggplot(data = d) +
                   width = .01, color = "blue") +
     labs(x = expression(log(theta)), y = expression(g(theta))) +
     ylim(0, 0.006) +
-    geom_line(mapping = aes(x = lambda, y = gt), linetype = "dashed", color = "red")
+    geom_line(mapping = aes(x = lambda, y = tg), linetype = "dashed", color = "red")
 ```
 
 We can now plot the posterior estimates.
 
 ```{r, fig.keep='all', fig.width=7.5, fig.height=10}
-gPost <- sapply(seq_len(100), function(i) local({gt <- gt * result$P[i, ]; gt / sum(gt)}))
+gPost <- sapply(seq_len(100), function(i) local({tg <- d$tg * result$P[i, ]; tg / sum(tg)}))
 plots <- lapply(c(1, 2, 4, 8), function(i) {
     ggplot() +
         geom_line(mapping = aes(x = tau, y = gPost[, i])) +
@@ -454,7 +459,7 @@ ggplot() +
     annotate("text", x = zMarker, y = 1.25, label = as.character(round(zMarker, 2)))
 ```
 
-## Another Normal example
+## Another Normal example (Twin Towers)
 
 In the first normal example, the $\theta$ distribution had a
 significant atom at 0 and the rest of the density was smeared around
@@ -483,17 +488,7 @@ freedom.
 
 ```{r, fig.keep='all', fig.width=7.5, fig.height=10}
 tau <- seq(from = -4, to = 6, by = 0.2)
-plots1 <- lapply(2:7,
-                 function(p) {
-                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = p)
-                     g <- result$stats[, "g"]
-                     ggplot(mapping = aes(x = z)) +
-                         geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
-                                        color = "brown", bins = 60, alpha = 0.2) +
-                         geom_line(mapping = aes(x = tau, y = g), color = "blue") +
-                         labs(x = "z", y = "Density", title = sprintf("DF = %d", p))
-                 })
-plots2 <- lapply(2:7,
+plots1 <- lapply(2:8,
                  function(p) {
                      result <- deconv(tau = tau, X = z, family = "Normal", pDegree = p)
                      g <- result$stats[, "g"]
@@ -504,27 +499,13 @@ plots2 <- lapply(2:7,
                          labs(x = expression(theta), y = "Density",
                               title = sprintf("DF = %d", p))
                 })
-plots <- mapply(function(x, y) list(x, y), plots1, plots2)
-plot_grid(plotlist = plots, ncol=2)
 ```
 
-Choosing the degrees of freedom to be 6, we now examine the effect of
+Choosing the degrees of freedom to be 7, we now examine the effect of
 regularization parameter $c0$.
 
-
 ```{r, fig.keep='all', fig.width=7.5, fig.height=10}
-plots1 <- lapply(c(0.5, 1, 2, 4, 16, 32),
-                 function(c0) {
-                     result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6,
-                                      c0 = c0)
-                     g <- result$stats[, "g"]
-                     ggplot(mapping = aes(x = z)) +
-                         geom_histogram(mapping = aes(y = ..count.. / sum(..count..)),
-                                        color = "brown", bins = 60, alpha = 0.2) +
-                         geom_line(mapping = aes(x = tau, y = g), color = "blue") +
-                         labs(x = "z", y = "Density", title = sprintf("C0 = %.1f", c0))
-                 })
-plots2 <- lapply(c(0.5, 1, 2, 4, 16, 32),
+plots2 <- lapply(c(0.5, 1, 2, 4, 8, 16, 32),
                  function(c0) {
                      result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6,
                                       c0 = c0)
@@ -539,6 +520,25 @@ plots2 <- lapply(c(0.5, 1, 2, 4, 16, 32),
 plots <- mapply(function(x, y) list(x, y), plots1, plots2)
 plot_grid(plotlist = plots, ncol = 2)
 ```
+
+The quantity $S(\alpha)$ is a measure of the strength of the penalty
+term $c_0$ and is returned by `deconv` in the result list as a named
+item `S`. Below we vary $c_0$ and degrees of freedom from 5 to 7 to
+gauge the effect of the regularization.
+
+```{r}
+c0_values <- c(.5, 1, 2, 4, 8, 16, 32)
+stable <- data.frame(
+    c0 = c0_values,
+    `DF 5` = sapply(c0_values, function(c0) deconv(tau = tau, X = z, family = "Normal", pDegree = 5, c0 = c0)$S),
+    `DF 6` = sapply(c0_values, function(c0) deconv(tau = tau, X = z, family = "Normal", pDegree = 6, c0 = c0)$S),
+    `DF 7` = sapply(c0_values, function(c0) deconv(tau = tau, X = z, family = "Normal", pDegree = 7, c0 = c0)$S)
+)
+knitr::kable(stable)
+```
+
+A DF of 6 or 7 captures the bimodality and a choice of $c_0 < 4$ would
+avoid excessive penalization.
 
 
 ## Binomial Example

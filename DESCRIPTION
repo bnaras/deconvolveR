@@ -14,6 +14,7 @@ Description: Empirical Bayes methods for learning prior distributions from data.
     Bayes methods.
 URL: https://bnaras.github.io/deconvolveR
 BugReports: https://github.com/bnaras/deconvolveR/issues
+Encoding: UTF-8
 Depends:
     R (>= 3.0)
 License: GPL (>= 2)

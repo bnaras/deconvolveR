@@ -5,6 +5,9 @@
 \alias{bardWordCount}
 \title{Shakespeare word counts in the entire canon: 14,376 distinct words
 appeared exactly once, 4343 words appeared twice etc.}
+\usage{
+data(bardWordCount)
+}
 \description{
 Shakespeare word counts in the entire canon: 14,376 distinct words
 appeared exactly once, 4343 words appeared twice etc.

@@ -3,7 +3,9 @@
 #' @importFrom splines ns
 #' @importFrom stats nlm dpois dnorm dbinom pnorm
 #' @param tau a vector of (implicitly m) discrete support points for
-#'     \eqn{\theta}
+#'     \eqn{\theta}. For the Poisson and normal families, \eqn{\theta}
+#'     is the mean parameter and for the binomial, it is the
+#'     probability of success.
 #' @param X the vector of sample values: a vector of counts for
 #'     Poisson, a vector of z-scores for Normal, a 2-d matrix with
 #'     rows consisting of pairs, (trial size \eqn{n_i}, number of
@@ -26,32 +28,30 @@
 #'     \code{TRUE}). Applies to Poisson only and has the effect of
 #'     adjusting \code{P} for the truncation at zero
 #' @param deltaAt the theta value where a delta function is desired
-#'     (default \code{NULL}). Applies to Normal only if non-null
+#'     (default \code{NULL}). This applies to the Normal case only and
+#'     even then only if it is non-null.
 #' @param scale if the Q matrix should be scaled so that the spline
 #'     basis has mean 0 and columns sum of squares to be one, (default
 #'     \code{TRUE})
 #' @param pDegree the degree of the splines to use (default 5). In
-#'        notation used in the references below, \eqn{p} = pDegree + 1
+#'     notation used in the references below, \eqn{p} = pDegree + 1
 #' @param aStart the starting values for the non-linear optimization,
 #'     default is a vector of 1s
 #' @param ... further args to function \code{nlm}
-#' @return a list of 9 items consisting of
-#'     \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
-#'     \item{Q}{the m by p matrix Q}
-#'     \item{P}{the n by m matrix P}
-#'     \item{S}{the ratio of artificial to genuine information
-#'              per the reference below, where it was referred to as
-#'              \eqn{R(\alpha)}}
-#'     \item{cov}{the covariance matrix for the mle}
-#'     \item{cov.g}{the covariance matrix for the \eqn{g}}
-#'     \item{stats}{an m by 6 matrix containing columns for \eqn{theta},
-#'                \eqn{g}, std. error of \eqn{g}, \eqn{G}
-#'                (the cdf of {g}), std. error of \eqn{G}, and
-#'                the bias of \eqn{g}}
-#'     \item{loglik}{the negative log-likelihood function for the
-#'           data taking a \eqn{p}-vector argument}
-#'     \item{statsFunction}{a function to compute the statistics
-#'                          returned above}
+#' @return a list of 9 items consisting of \item{mle}{the maximum
+#'     likelihood estimate \eqn{\hat{\alpha}}} \item{Q}{the m by p
+#'     matrix Q} \item{P}{the n by m matrix P} \item{S}{the ratio of
+#'     artificial to genuine information per the reference below,
+#'     where it was referred to as \eqn{R(\alpha)}} \item{cov}{the
+#'     covariance matrix for the mle} \item{cov.g}{the covariance
+#'     matrix for the \eqn{g}} \item{stats}{an m by 6 or 7 matrix
+#'     containing columns for \eqn{theta}, \eqn{g}, \eqn{\tilde{g}}
+#'     which is \eqn{g} with thinning correction applied and named
+#'     \code{tg}, std. error of \eqn{g}, \eqn{G} (the cdf of {g}),
+#'     std. error of \eqn{G}, and the bias of \eqn{g}}
+#'     \item{loglik}{the negative log-likelihood function for the data
+#'     taking a \eqn{p}-vector argument} \item{statsFunction}{a
+#'     function to compute the statistics returned above}
 #'
 #' @section Details:
 #' The data \code{X} is always required with two exceptions. In the Poisson case,
@@ -59,6 +59,11 @@
 #' the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The second exception is
 #' for experimentation with other exponential families besides the three implemented here:
 #' \code{y}, \code{P} and \code{Q} can be specified together.
+#'
+#' Note also that in the Poisson case where there is zero truncation,
+#' the \code{stats} matrix has an additional column \code{"tg"} which
+#' accounts for the thinning correction induced by the truncation. See
+#' vignette for details.
 #'
 #' @export
 #' @references Bradley Efron. Empirical Bayes Deconvolution Estimates. Biometrika 103(1), 1-20,
@@ -83,13 +88,15 @@
 #' tau <- seq(from = -4, to = 5, by = 0.2)
 #' result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6)
 #' g <- result$stats[, "g"]
-#' ggplot() +
+#' if (require("ggplot2")) {
+#'   ggplot() +
 #'      geom_histogram(mapping = aes(x = disjointTheta, y  = ..count.. / sum(..count..) ),
 #'                     color = "blue", fill = "red", bins = 40, alpha = 0.5) +
 #'      geom_histogram(mapping = aes(x = z, y  = ..count.. / sum(..count..) ),
 #'                     color = "brown", bins = 40, alpha = 0.5) +
 #'      geom_line(mapping = aes(x = tau, y = g), color = "black") +
-#'      labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)")
+#'      labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)"))
+#' }
 #'
 deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Binomial"),
                    ignoreZero = TRUE, deltaAt = NULL, c0 = 1,
@@ -98,6 +105,10 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
                    aStart = 1.0, ...) {
 
     family <- match.arg(family)
+    if (!is.null(deltaAt) && (family != "Normal")) {
+        stop("deltaAt parameter applies only to Normal family.")
+    }
+
     if (missing(Q) && missing(P)) {
         m <- length(tau)
         if (family == "Poisson") {
@@ -239,6 +250,13 @@ deconv <- function(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal", "Bin
 
     mle <- result$estimate
     stats <- statsFunction(mle)
+    ## Thinning correction values
+    if (family == "Poisson" && ignoreZero) {
+        mat <- stats$mat
+        tg <- mat[, "g"] / (1 - exp(-tau))
+        stats$mat <- cbind(mat, tg = tg / sum(tg))
+    }
+
     list(mle = mle,
          Q = Q,
          P = P,

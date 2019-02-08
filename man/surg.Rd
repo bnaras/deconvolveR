@@ -6,6 +6,9 @@
 \title{Intestinal surgery data involving 844 cancer patients. The data consists of
 pairs (\eqn{n_i}, \eqn{s_i}) where \eqn{n_i} is the number of satellites removed
 and \eqn{s_i} is the number of satellites found to be malignant.}
+\usage{
+data(surg)
+}
 \description{
 Intestinal surgery data involving 844 cancer patients. The data consists of
 pairs (\eqn{n_i}, \eqn{s_i}) where \eqn{n_i} is the number of satellites removed

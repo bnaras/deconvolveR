@@ -10,7 +10,9 @@ deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal",
 }
 \arguments{
 \item{tau}{a vector of (implicitly m) discrete support points for
-\eqn{\theta}}
+\eqn{\theta}. For the Poisson and normal families, \eqn{\theta}
+is the mean parameter and for the binomial, it is the
+probability of success.}
 
 \item{X}{the vector of sample values: a vector of counts for
 Poisson, a vector of z-scores for Normal, a 2-d matrix with
@@ -40,7 +42,8 @@ number of X in bin K) described in the references below}
 adjusting \code{P} for the truncation at zero}
 
 \item{deltaAt}{the theta value where a delta function is desired
-(default \code{NULL}). Applies to Normal only if non-null}
+(default \code{NULL}). This applies to the Normal case only and
+even then only if it is non-null.}
 
 \item{c0}{the regularization parameter (default 1)}
 
@@ -57,23 +60,20 @@ default is a vector of 1s}
 \item{...}{further args to function \code{nlm}}
 }
 \value{
-a list of 9 items consisting of
-    \item{mle}{the maximum likelihood estimate \eqn{\hat{\alpha}}}
-    \item{Q}{the m by p matrix Q}
-    \item{P}{the n by m matrix P}
-    \item{S}{the ratio of artificial to genuine information
-             per the reference below, where it was referred to as
-             \eqn{R(\alpha)}}
-    \item{cov}{the covariance matrix for the mle}
-    \item{cov.g}{the covariance matrix for the \eqn{g}}
-    \item{stats}{an m by 6 matrix containing columns for \eqn{theta},
-               \eqn{g}, std. error of \eqn{g}, \eqn{G}
-               (the cdf of {g}), std. error of \eqn{G}, and
-               the bias of \eqn{g}}
-    \item{loglik}{the negative log-likelihood function for the
-          data taking a \eqn{p}-vector argument}
-    \item{statsFunction}{a function to compute the statistics
-                         returned above}
+a list of 9 items consisting of \item{mle}{the maximum
+    likelihood estimate \eqn{\hat{\alpha}}} \item{Q}{the m by p
+    matrix Q} \item{P}{the n by m matrix P} \item{S}{the ratio of
+    artificial to genuine information per the reference below,
+    where it was referred to as \eqn{R(\alpha)}} \item{cov}{the
+    covariance matrix for the mle} \item{cov.g}{the covariance
+    matrix for the \eqn{g}} \item{stats}{an m by 6 or 7 matrix
+    containing columns for \eqn{theta}, \eqn{g}, \eqn{\tilde{g}}
+    which is \eqn{g} with thinning correction applied and named
+    \code{tg}, std. error of \eqn{g}, \eqn{G} (the cdf of {g}),
+    std. error of \eqn{G}, and the bias of \eqn{g}}
+    \item{loglik}{the negative log-likelihood function for the data
+    taking a \eqn{p}-vector argument} \item{statsFunction}{a
+    function to compute the statistics returned above}
 }
 \description{
 A function to compute Empirical Bayes estimates using deconvolution
@@ -85,6 +85,11 @@ The data \code{X} is always required with two exceptions. In the Poisson case,
 the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The second exception is
 for experimentation with other exponential families besides the three implemented here:
 \code{y}, \code{P} and \code{Q} can be specified together.
+
+Note also that in the Poisson case where there is zero truncation,
+the \code{stats} matrix has an additional column \code{"tg"} which
+accounts for the thinning correction induced by the truncation. See
+vignette for details.
 }
 
 \examples{
@@ -104,13 +109,15 @@ z <- rnorm(n = N, mean = disjointTheta)
 tau <- seq(from = -4, to = 5, by = 0.2)
 result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6)
 g <- result$stats[, "g"]
-ggplot() +
+if (require("ggplot2")) {
+  ggplot() +
      geom_histogram(mapping = aes(x = disjointTheta, y  = ..count.. / sum(..count..) ),
                     color = "blue", fill = "red", bins = 40, alpha = 0.5) +
      geom_histogram(mapping = aes(x = z, y  = ..count.. / sum(..count..) ),
                     color = "brown", bins = 40, alpha = 0.5) +
      geom_line(mapping = aes(x = tau, y = g), color = "black") +
-     labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)")
+     labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)"))
+}
 
 }
 \references{

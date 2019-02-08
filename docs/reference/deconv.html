@@ -90,6 +90,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
@@ -127,7 +130,9 @@
     <tr>
       <th>tau</th>
       <td><p>a vector of (implicitly m) discrete support points for
-\(\theta\)</p></td>
+\(\theta\). For the Poisson and normal families, \(\theta\)
+is the mean parameter and for the binomial, it is the
+probability of success.</p></td>
     </tr>
     <tr>
       <th>X</th>
@@ -173,7 +178,8 @@ adjusting <code>P</code> for the truncation at zero</p></td>
     <tr>
       <th>deltaAt</th>
       <td><p>the theta value where a delta function is desired
-(default <code>NULL</code>). Applies to Normal only if non-null</p></td>
+(default <code>NULL</code>). This applies to the Normal case only and
+even then only if it is non-null.</p></td>
     </tr>
     <tr>
       <th>c0</th>
@@ -204,22 +210,20 @@ default is a vector of 1s</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a list of 9 items consisting of</p>
-<dt>mle</dt><dd><p>the maximum likelihood estimate \(\hat{\alpha}\)</p></dd>
-    <dt>Q</dt><dd><p>the m by p matrix Q</p></dd>
-    <dt>P</dt><dd><p>the n by m matrix P</p></dd>
-    <dt>S</dt><dd><p>the ratio of artificial to genuine information
-             per the reference below, where it was referred to as
-             \(R(\alpha)\)</p></dd>
-    <dt>cov</dt><dd><p>the covariance matrix for the mle</p></dd>
-    <dt>cov.g</dt><dd><p>the covariance matrix for the \(g\)</p></dd>
-    <dt>stats</dt><dd><p>an m by 6 matrix containing columns for \(theta\),
-               \(g\), std. error of \(g\), \(G\)
-               (the cdf of g), std. error of \(G\), and
-               the bias of \(g\)</p></dd>
-    <dt>loglik</dt><dd><p>the negative log-likelihood function for the
-          data taking a \(p\)-vector argument</p></dd>
-    <dt>statsFunction</dt><dd><p>a function to compute the statistics
-                         returned above</p></dd>
+<dt>mle</dt><dd><p>the maximum
+    likelihood estimate \(\hat{\alpha}\)</p></dd> <dt>Q</dt><dd><p>the m by p
+    matrix Q</p></dd> <dt>P</dt><dd><p>the n by m matrix P</p></dd> <dt>S</dt><dd><p>the ratio of
+    artificial to genuine information per the reference below,
+    where it was referred to as \(R(\alpha)\)</p></dd> <dt>cov</dt><dd><p>the
+    covariance matrix for the mle</p></dd> <dt>cov.g</dt><dd><p>the covariance
+    matrix for the \(g\)</p></dd> <dt>stats</dt><dd><p>an m by 6 or 7 matrix
+    containing columns for \(theta\), \(g\), \(\tilde{g}\)
+    which is \(g\) with thinning correction applied and named
+    <code>tg</code>, std. error of \(g\), \(G\) (the cdf of g),
+    std. error of \(G\), and the bias of \(g\)</p></dd>
+    <dt>loglik</dt><dd><p>the negative log-likelihood function for the data
+    taking a \(p\)-vector argument</p></dd> <dt>statsFunction</dt><dd><p>a
+    function to compute the statistics returned above</p></dd>
 
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -230,6 +234,10 @@ default is a vector of 1s</p></td>
 the observations $\(X\)$ is assumed to be 1, 2, .., <code><a href='https://www.rdocumentation.org/packages/base/topics/length'>length(y)</a></code>. The second exception is
 for experimentation with other exponential families besides the three implemented here:
 <code>y</code>, <code>P</code> and <code>Q</code> can be specified together.</p>
+<p>Note also that in the Poisson case where there is zero truncation,
+the <code>stats</code> matrix has an additional column <code>"tg"</code> which
+accounts for the thinning correction induced by the truncation. See
+vignette for details.</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
@@ -241,34 +249,63 @@ Cambridge University Press. ISBN 978-1-1-7-14989-2. Chapter 21.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>set.seed(238923) ## for reproducibility
-N <- 1000
-theta <- rchisq(N,  df = 10)
-X <- rpois(n = N, lambda = theta)
-tau <- seq(1, 32)
-result <- deconv(tau = tau, X = X, ignoreZero = FALSE)
-print(result$stats)
-##
-## Twin Towers Example
-## See Brad Efron: Bayes, Oracle Bayes and Empirical Bayes
-## disjointTheta is provided by deconvolveR package
-theta <- disjointTheta; N <- length(disjointTheta)
-z <- rnorm(n = N, mean = disjointTheta)
-tau <- seq(from = -4, to = 5, by = 0.2)
-result <- deconv(tau = tau, X = z, family = "Normal", pDegree = 6)
-g <- result$stats[, "g"]
-ggplot() +
-     geom_histogram(mapping = aes(x = disjointTheta, y  = ..count.. / sum(..count..) ),
-                    color = "blue", fill = "red", bins = 40, alpha = 0.5) +
-     geom_histogram(mapping = aes(x = z, y  = ..count.. / sum(..count..) ),
-                    color = "brown", bins = 40, alpha = 0.5) +
-     geom_line(mapping = aes(x = tau, y = g), color = "black") +
-     labs(x = paste(expression(theta), "and x"), y = paste(expression(g(theta)), " and f(x)")
-
-</div><div class='output co'>#&gt; <span class='error'>Error: &lt;text&gt;:26:0: unexpected end of input</span>
-#&gt; <span class='error'>24: </span>
-#&gt; <span class='error'>25: </span>
-#&gt; <span class='error'>   ^</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/Random'>set.seed</a></span>(<span class='fl'>238923</span>) <span class='co'>## for reproducibility</span>
+<span class='no'>N</span> <span class='kw'>&lt;-</span> <span class='fl'>1000</span>
+<span class='no'>theta</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Chisquare'>rchisq</a></span>(<span class='no'>N</span>,  <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>10</span>)
+<span class='no'>X</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Poisson'>rpois</a></span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='no'>N</span>, <span class='kw'>lambda</span> <span class='kw'>=</span> <span class='no'>theta</span>)
+<span class='no'>tau</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/seq'>seq</a></span>(<span class='fl'>1</span>, <span class='fl'>32</span>)
+<span class='no'>result</span> <span class='kw'>&lt;-</span> <span class='fu'>deconv</span>(<span class='kw'>tau</span> <span class='kw'>=</span> <span class='no'>tau</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>X</span>, <span class='kw'>ignoreZero</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/print'>print</a></span>(<span class='no'>result</span>$<span class='no'>stats</span>)</div><div class='output co'>#&gt;       theta            g         SE.g           G         SE.G        Bias.g
+#&gt;  [1,]     1 0.0051481615 0.0016525341 0.005148161 1.652534e-03  8.541487e-04
+#&gt;  [2,]     2 0.0098958954 0.0023381444 0.015044057 3.986483e-03  1.099087e-03
+#&gt;  [3,]     3 0.0185198134 0.0029466370 0.033563870 6.895555e-03  1.102607e-03
+#&gt;  [4,]     4 0.0328530174 0.0032249075 0.066416888 9.873512e-03  4.812427e-04
+#&gt;  [5,]     5 0.0537835715 0.0036693678 0.120200459 1.224156e-02 -1.090720e-03
+#&gt;  [6,]     6 0.0791112606 0.0056206577 0.199311720 1.425433e-02 -3.316963e-03
+#&gt;  [7,]     7 0.1017934505 0.0077509950 0.301105170 1.743623e-02 -4.781816e-03
+#&gt;  [8,]     8 0.1121459629 0.0073194510 0.413251133 2.110274e-02 -3.712078e-03
+#&gt;  [9,]     9 0.1076955317 0.0051046274 0.520946665 2.259374e-02 -5.759912e-04
+#&gt; [10,]    10 0.0934081064 0.0049730965 0.614354771 2.125191e-02  2.609017e-03
+#&gt; [11,]    11 0.0758233573 0.0063169145 0.690178128 1.862765e-02  4.426107e-03
+#&gt; [12,]    12 0.0596913949 0.0066510289 0.749869523 1.672495e-02  4.632921e-03
+#&gt; [13,]    13 0.0472247251 0.0058223171 0.797094249 1.624772e-02  3.649927e-03
+#&gt; [14,]    14 0.0388249870 0.0043740118 0.835919236 1.627164e-02  1.933483e-03
+#&gt; [15,]    15 0.0332241328 0.0031665912 0.869143368 1.566917e-02 -3.121847e-05
+#&gt; [16,]    16 0.0289251034 0.0030459927 0.898068472 1.404924e-02 -1.798007e-03
+#&gt; [17,]    17 0.0250253380 0.0036190550 0.923093810 1.171550e-02 -3.024715e-03
+#&gt; [18,]    18 0.0210171384 0.0039132116 0.944110948 9.419157e-03 -3.448033e-03
+#&gt; [19,]    19 0.0167363462 0.0035333178 0.960847294 7.853539e-03 -2.991447e-03
+#&gt; [20,]    20 0.0123508104 0.0026193414 0.973198105 6.965651e-03 -1.879392e-03
+#&gt; [21,]    21 0.0084417110 0.0017508155 0.981639816 6.220128e-03 -6.879592e-04
+#&gt; [22,]    22 0.0054981488 0.0012927504 0.987137965 5.413467e-03  1.279342e-04
+#&gt; [23,]    23 0.0035175978 0.0010712165 0.990655562 4.617829e-03  5.320583e-04
+#&gt; [24,]    24 0.0022788319 0.0008958692 0.992934394 3.919108e-03  6.645066e-04
+#&gt; [25,]    25 0.0015410174 0.0007350941 0.994475412 3.340415e-03  6.679252e-04
+#&gt; [26,]    26 0.0011212384 0.0006048170 0.995596650 2.858930e-03  6.345106e-04
+#&gt; [27,]    27 0.0008930759 0.0005149033 0.996489726 2.434629e-03  6.091289e-04
+#&gt; [28,]    28 0.0007695787 0.0004644742 0.997259305 2.029782e-03  6.030704e-04
+#&gt; [29,]    29 0.0007062477 0.0004516035 0.997965553 1.611586e-03  6.169472e-04
+#&gt; [30,]    30 0.0006794627 0.0004755882 0.998645015 1.150613e-03  6.487035e-04
+#&gt; [31,]    31 0.0006745962 0.0005341491 0.999319611 6.204563e-04  6.948837e-04
+#&gt; [32,]    32 0.0006803885 0.0006204563 1.000000000 1.706969e-10  7.501296e-04</div><div class='input'><span class='co'>##</span>
+<span class='co'>## Twin Towers Example</span>
+<span class='co'>## See Brad Efron: Bayes, Oracle Bayes and Empirical Bayes</span>
+<span class='co'>## disjointTheta is provided by deconvolveR package</span>
+<span class='no'>theta</span> <span class='kw'>&lt;-</span> <span class='no'>disjointTheta</span>; <span class='no'>N</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/length'>length</a></span>(<span class='no'>disjointTheta</span>)
+<span class='no'>z</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Normal'>rnorm</a></span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='no'>N</span>, <span class='kw'>mean</span> <span class='kw'>=</span> <span class='no'>disjointTheta</span>)
+<span class='no'>tau</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/seq'>seq</a></span>(<span class='kw'>from</span> <span class='kw'>=</span> -<span class='fl'>4</span>, <span class='kw'>to</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>0.2</span>)
+<span class='no'>result</span> <span class='kw'>&lt;-</span> <span class='fu'>deconv</span>(<span class='kw'>tau</span> <span class='kw'>=</span> <span class='no'>tau</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>z</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"Normal"</span>, <span class='kw'>pDegree</span> <span class='kw'>=</span> <span class='fl'>6</span>)
+<span class='no'>g</span> <span class='kw'>&lt;-</span> <span class='no'>result</span>$<span class='no'>stats</span>[, <span class='st'>"g"</span>]
+<span class='kw'>if</span> (<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>require</a></span>(<span class='st'>"ggplot2"</span>)) {
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>() +
+     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span>(<span class='kw'>mapping</span> <span class='kw'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>disjointTheta</span>, <span class='kw'>y</span>  <span class='kw'>=</span> <span class='no'>..count..</span> / <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sum'>sum</a></span>(<span class='no'>..count..</span>) ),
+                    <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"blue"</span>, <span class='kw'>fill</span> <span class='kw'>=</span> <span class='st'>"red"</span>, <span class='kw'>bins</span> <span class='kw'>=</span> <span class='fl'>40</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>) +
+     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span>(<span class='kw'>mapping</span> <span class='kw'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>z</span>, <span class='kw'>y</span>  <span class='kw'>=</span> <span class='no'>..count..</span> / <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sum'>sum</a></span>(<span class='no'>..count..</span>) ),
+                    <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"brown"</span>, <span class='kw'>bins</span> <span class='kw'>=</span> <span class='fl'>40</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>) +
+     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span>(<span class='kw'>mapping</span> <span class='kw'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>tau</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='no'>g</span>), <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"black"</span>) +
+     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/paste'>paste</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/expression'>expression</a></span>(<span class='no'>theta</span>), <span class='st'>"and x"</span>), <span class='kw'>y</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/paste'>paste</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/expression'>expression</a></span>(<span class='fu'>g</span>(<span class='no'>theta</span>)), <span class='st'>" and f(x)"</span>))
+}</div><div class='output co'>#&gt; <span class='message'>Loading required package: ggplot2</span></div><div class='img'><img src='deconv-1.png' alt='' width='700' height='433' /></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
