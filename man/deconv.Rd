@@ -4,9 +4,22 @@
 \alias{deconv}
 \title{A function to compute Empirical Bayes estimates using deconvolution}
 \usage{
-deconv(tau, X, y, Q, P, n = 40, family = c("Poisson", "Normal",
-  "Binomial"), ignoreZero = TRUE, deltaAt = NULL, c0 = 1,
-  scale = TRUE, pDegree = 5, aStart = 1, ...)
+deconv(
+  tau,
+  X,
+  y,
+  Q,
+  P,
+  n = 40,
+  family = c("Poisson", "Normal", "Binomial"),
+  ignoreZero = TRUE,
+  deltaAt = NULL,
+  c0 = 1,
+  scale = TRUE,
+  pDegree = 5,
+  aStart = 1,
+  ...
+)
 }
 \arguments{
 \item{tau}{a vector of (implicitly m) discrete support points for

@@ -1,14 +1,23 @@
 #' R package for Empirical Bayes \eqn{g}-modeling using exponential families.
-#' A vignette provides detailed examples and results.
+#'
+#' \code{deconvolveR} is a package for Empirical Bayes Deconvolution
+#' and Estimation. A friendly introduction is provided in the JSS
+#' paper reference below and this package includes a vignette
+#' containing a number of examples.
 #'
 #' @docType package
-#' @name deconvolveR
+#' @name deconvolveR-package
 #'
-#' @references Bradley Efron. Empirical Bayes Deconvolution Estimates. Biometrika 103(1), 1-20,
-#' ISSN 0006-3444. doi:10.1093/biomet/asv068.
-#' \url{http://biomet.oxfordjournals.org/content/103/1/1.full.pdf+html}
-#' @references Bradley Efron and Trevor Hastie. Computer Age Statistical Inference.
-#' Cambridge University Press. ISBN 978-1-1-7-14989-2. Chapter 21.
+#' @references Bradley Efron. Empirical Bayes Deconvolution
+#'     Estimates. Biometrika 103(1), 1-20, ISSN
+#'     0006-3444. doi:10.1093/biomet/asv068.
+#'     \url{http://biomet.oxfordjournals.org/content/103/1/1.full.pdf+html}
+#' @references Bradley Efron and Trevor Hastie. Computer Age
+#'     Statistical Inference.  Cambridge University Press. ISBN
+#'     978-1-1-7-14989-2. Chapter 21.
+#' @references Balasubramanian Narasimhan and Bradley
+#'     Efron. deconvolveR: A G-Modeling Program for Deconvolution and
+#'     Empirical Bayes Estimation. doi:10.18637/jss.v094.i11
 #'
 NULL
 
@@ -17,7 +26,7 @@ NULL
 #'
 #' @references Bradley Efron and Ronald Thisted. Estimating the number of
 #' unseen species: How many words did Shakespeare know? Biometrika, Vol 63(3),
-#' doi: 10.1093/biomet/63.3.435.
+#' doi:10.1093/biomet/63.3.435.
 #'
 #' @name bardWordCount
 #' @usage data(bardWordCount)

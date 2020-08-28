@@ -1,0 +1,18 @@
+bibentry(bibtype = "Article",
+  title        = "{deconvolveR}: A $G$-Modeling Program for Deconvolution and Empirical Bayes Estimation",
+  author       = c(person(given = "Balasubramanian",
+                          family = "Narasimhan",
+                          email = "naras@stanford.edu"),
+                   person(given = "Bradley",
+                          family = "Efron",
+                          email = "brad@stat.stanford.edu")),
+  journal      = "Journal of Statistical Software",
+  year         = "2020",
+  volume       = "94",
+  number       = "11",
+  pages        = "1--20",
+  doi          = "10.18637/jss.v094.i11",
+
+  header       = "To cite deconvolveR in publications use:"
+)
+

@@ -6,23 +6,25 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Empirical Bayes Estimation Strategies • deconvolveR</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
+<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Empirical Bayes Estimation Strategies">
 <meta property="og:description" content='Empirical Bayes methods for learning prior distributions from data.
     An unknown prior distribution (g) has yielded (unobservable) parameters, each of
     which produces a data point from a parametric exponential family (f). The goal
     is to estimate the unknown prior ("g-modeling") by deconvolution and Empirical
-    Bayes methods.'>
-<meta name="twitter:card" content="summary">
+    Bayes methods. Details and examples are in the paper by Narasimhan and Efron
+    (2020, &lt;doi:10.18637/jss.v094.i11&gt;).'>
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body>
-    <div class="container template-article">
+<body data-spy="scroll" data-target="#toc">
+    <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -34,7 +36,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">deconvolveR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2</span>
       </span>
     </div>
 
@@ -42,7 +44,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -65,7 +67,14 @@
   <a href="news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/bnaras/deconvolveR/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -74,30 +83,25 @@
 <!--/.navbar -->
 
       
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    
 
-    
-    
-<!-- README.md is generated from the source: README.Rmd -->
+      </header><div class="row">
+  <div class="contents col-md-9">
 <div id="empirical-bayes-deconvolution" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#empirical-bayes-deconvolution" class="anchor"></a>Empirical Bayes Deconvolution</h1></div>
 
-<p>An unknown prior density <span class="math inline">\(g(\theta)\)</span> has yielded (unobservable) <span class="math inline">\(\Theta_1, \Theta_2,\ldots,\Theta_N\)</span>, and each <span class="math inline">\(\Theta_i\)</span> produces an observation <span class="math inline">\(X_i\)</span> from an exponential family. <code>deconvolveR</code> is an R package for estimating prior distribution <span class="math inline">\(g(\theta)\)</span> from the data using Empirical Bayes deconvolution.</p>
-<p>The current package is still under construction but will soon appear on CRAN along with a manuscript. Meanwhile, you can reproduce many examples by installing the package in R thus:</p>
-<pre><code><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">devtools::install_github("bnaras/deconvolveR")
-library(deconvolveR)
-vignette("deconvolution")</a></code></pre>
+<p>An unknown prior density <span class="math inline"><em>g</em>(<em>θ</em>)</span> has yielded (unobservable) <span class="math inline"><em>Θ</em><sub>1</sub>, <em>Θ</em><sub>2</sub>, …, <em>Θ</em><sub><em>N</em></sub></span>, and each <span class="math inline"><em>Θ</em><sub><em>i</em></sub></span> produces an observation <span class="math inline"><em>X</em><sub><em>i</em></sub></span> from an exponential family. <code>deconvolveR</code> is an R package for estimating prior distribution <span class="math inline"><em>g</em>(<em>θ</em>)</span> from the data using Empirical Bayes deconvolution.</p>
+<p>Details and examples may be found in the paper by <a href="https://dx.doi.org/10.18637/jss.v094.i11">Narasimhan and Efron, 2020</a>. A vignette with further examples is also provided.</p>
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
 <li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=deconvolveR">https://​cloud.r-project.org/​package=deconvolveR</a>
+</li>
+<li>Browse source code at <br><a href="https://github.com/bnaras/deconvolveR/">https://​github.com/​bnaras/​deconvolveR/​</a>
 </li>
 <li>Report a bug at <br><a href="https://github.com/bnaras/deconvolveR/issues">https://​github.com/​bnaras/​deconvolveR/​issues</a>
 </li>
@@ -109,38 +113,46 @@ vignette("deconvolution")</a></code></pre>
 <li>GPL (&gt;= 2)</li>
 </ul>
 </div>
+<div class="citation">
+<h2>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html">Citing deconvolveR</a></li>
+</ul>
+</div>
 <div class="developers">
 <h2>Developers</h2>
 <ul class="list-unstyled">
-<li>Bradley Efron <br><small class="roles"> Author </small>  </li>
-<li>Balasubramanian Narasimhan <br><small class="roles"> Author, maintainer </small>  </li>
+<li>
+<a href="http://statweb.stanford.edu/~ckirby/brad/">Bradley Efron</a> <br><small class="roles"> Author </small>  </li>
+<li>
+<a href="https://web.stanford.edu/~naras">Balasubramanian Narasimhan</a> <br><small class="roles"> Author, maintainer </small>  </li>
 </ul>
 </div>
 
-      <div class="dev-status">
+  <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://travis-ci.org/bnaras/deconvolveR"><img src="https://travis-ci.org/bnaras/deconvolveR.svg?branch=master" alt="Travis-CI Build Status"></a></li>
 <li><a href="https://cran.r-project.org/package=deconvolveR"><img src="https://www.r-pkg.org/badges/version/deconvolveR" alt="CRAN_Status_Badge"></a></li>
-<li><a href="https://codecov.io/github/bnaras/deconvolveR?branch=master"><img src="https://img.shields.io/codecov/c/github/bnaras/deconvolveR/master.svg" alt="Coverage Status"></a></li>
 </ul>
 </div>
 </div>
-
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Bradley Efron, Balasubramanian Narasimhan.</p>
+  <p>Developed by <a href="http://statweb.stanford.edu/~ckirby/brad/">Bradley Efron</a>, <a href="https://web.stanford.edu/~naras">Balasubramanian Narasimhan</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>
