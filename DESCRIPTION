@@ -1,6 +1,6 @@
 Package: deconvolveR
 Title: Empirical Bayes Estimation Strategies
-Version: 1.2
+Version: 1.2-1
 VignetteBuilder: knitr
 Suggests: cowplot, ggplot2, knitr, rmarkdown
 Authors@R: c(person("Bradley", "Efron", role=c("aut"),
@@ -13,7 +13,7 @@ Description: Empirical Bayes methods for learning prior distributions from data.
     is to estimate the unknown prior ("g-modeling") by deconvolution and Empirical
     Bayes methods. Details and examples are in the paper by Narasimhan and Efron
     (2020, <doi:10.18637/jss.v094.i11>).
-URL: https://bnaras.github.io/deconvolveR
+URL: https://bnaras.github.io/deconvolveR/
 BugReports: https://github.com/bnaras/deconvolveR/issues
 Encoding: UTF-8
 Depends:

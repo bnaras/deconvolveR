@@ -1,3 +1,7 @@
+# deconvolveR 1.2-1
+
+- Fixed URL per CRAN
+
 # deconvolveR 1.2
 
 - Updated documentation for JSS paper. 
@@ -12,3 +16,4 @@
 # deconvolveR 1.0
 
 - Initial release
+
