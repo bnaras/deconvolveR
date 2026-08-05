@@ -1,9 +1,13 @@
-Empirical Bayes Deconvolution
-=============================
+# deconvolveR <img src="man/figures/logo.png" align="right" height="139" alt="deconvolveR hex logo" />
 
-[![Travis-CI Build
-Status](https://travis-ci.org/bnaras/deconvolveR.svg?branch=master)](https://travis-ci.org/bnaras/deconvolveR)
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/deconvolveR)](https://cran.r-project.org/package=deconvolveR)
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/bnaras/deconvolveR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bnaras/deconvolveR/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/deconvolveR)](https://cran.r-project.org/package=deconvolveR)
+[![Monthly downloads](https://cranlogs.r-pkg.org/badges/deconvolveR)](https://cran.r-project.org/package=deconvolveR)
+[![Total downloads](https://cranlogs.r-pkg.org/badges/grand-total/deconvolveR)](https://cran.r-project.org/package=deconvolveR)
+<!-- badges: end -->
+
+## Empirical Bayes Deconvolution
 
 An unknown prior density $g(\theta)$ has yielded (unobservable)
 $\Theta_1, \Theta_2,\ldots,\Theta_N$, and each $\Theta_i$ produces an
