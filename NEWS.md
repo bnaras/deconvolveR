@@ -1,3 +1,11 @@
+# deconvolveR 1.2-2
+
+- Fixed documentation markup flagged by CRAN (`checkRd` "Lost braces"
+  NOTE in `deconv.Rd`)
+- Switched CI from Travis to GitHub Actions; pkgdown site is now
+  built and deployed via GitHub Actions
+- Added a package logo and updated badges
+
 # deconvolveR 1.2-1
 
 - Fixed URL per CRAN

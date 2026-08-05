@@ -45,9 +45,9 @@
 #'     where it was referred to as \eqn{R(\alpha)}} \item{cov}{the
 #'     covariance matrix for the mle} \item{cov.g}{the covariance
 #'     matrix for the \eqn{g}} \item{stats}{an m by 6 or 7 matrix
-#'     containing columns for \eqn{theta}, \eqn{g}, \eqn{\tilde{g}}
+#'     containing columns for \eqn{\theta}, \eqn{g}, \eqn{\tilde{g}}
 #'     which is \eqn{g} with thinning correction applied and named
-#'     \code{tg}, std. error of \eqn{g}, \eqn{G} (the cdf of {g}),
+#'     \code{tg}, std. error of \eqn{g}, \eqn{G} (the cdf of \eqn{g}),
 #'     std. error of \eqn{G}, and the bias of \eqn{g}}
 #'     \item{loglik}{the negative log-likelihood function for the data
 #'     taking a \eqn{p}-vector argument} \item{statsFunction}{a
@@ -56,7 +56,7 @@
 #' @section Details:
 #' The data \code{X} is always required with two exceptions. In the Poisson case,
 #' \code{y} alone may be specified and \code{X} omitted, in which case the sample space of
-#' the observations $\eqn{X}$ is assumed to be 1, 2, .., \code{length(y)}. The second exception is
+#' the observations \eqn{X} is assumed to be 1, 2, .., \code{length(y)}. The second exception is
 #' for experimentation with other exponential families besides the three implemented here:
 #' \code{y}, \code{P} and \code{Q} can be specified together.
 #'

@@ -2,6 +2,7 @@
 % Please edit documentation in R/deconvolveR-package.R
 \docType{package}
 \name{deconvolveR-package}
+\alias{deconvolveR}
 \alias{deconvolveR-package}
 \title{R package for Empirical Bayes \eqn{g}-modeling using exponential families.}
 \description{
@@ -23,4 +24,22 @@ Bradley Efron and Trevor Hastie. Computer Age
 Balasubramanian Narasimhan and Bradley
     Efron. deconvolveR: A G-Modeling Program for Deconvolution and
     Empirical Bayes Estimation. doi:10.18637/jss.v094.i11
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://bnaras.github.io/deconvolveR/}
+  \item Report bugs at \url{https://github.com/bnaras/deconvolveR/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Balasubramanian Narasimhan \email{naras@stat.Stanford.EDU}
+
+Authors:
+\itemize{
+  \item Balasubramanian Narasimhan \email{naras@stat.Stanford.EDU}
+  \item Bradley Efron \email{brad@stat.stanford.edu}
+}
+
 }
