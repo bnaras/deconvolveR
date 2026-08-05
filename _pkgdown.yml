@@ -1,7 +1,11 @@
+url: https://bnaras.github.io/deconvolveR/
+
+template:
+  bootstrap: 5
+  math-rendering: mathjax
+
 authors:
-
   Balasubramanian Narasimhan:
-    href: https://web.stanford.edu/~naras
-
+    href: https://naras.su.domains
   Bradley Efron:
-    href: http://statweb.stanford.edu/~ckirby/brad/
+    href: https://efron.ckirby.su.domains/
