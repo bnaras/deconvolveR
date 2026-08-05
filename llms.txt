@@ -1,0 +1,42 @@
+# deconvolveR
+
+## Empirical Bayes Deconvolution
+
+An unknown prior density \\g(\theta)\\ has yielded (unobservable)
+\\\Theta_1, \Theta_2,\ldots,\Theta_N\\, and each \\\Theta_i\\ produces
+an observation \\X_i\\ from an exponential family. `deconvolveR` is an R
+package for estimating prior distribution \\g(\theta)\\ from the data
+using Empirical Bayes deconvolution.
+
+Details and examples may be found in the paper by [Narasimhan and Efron,
+2020](https://dx.doi.org/10.18637/jss.v094.i11). A vignette with further
+examples is also provided.
+
+# Package index
+
+## All functions
+
+- [`bardWordCount`](https://bnaras.github.io/deconvolveR/reference/bardWordCount.md)
+  : Shakespeare word counts in the entire canon: 14,376 distinct words
+  appeared exactly once, 4343 words appeared twice etc.
+- [`deconv()`](https://bnaras.github.io/deconvolveR/reference/deconv.md)
+  : A function to compute Empirical Bayes estimates using deconvolution
+- [`deconvolveR`](https://bnaras.github.io/deconvolveR/reference/deconvolveR-package.md)
+  [`deconvolveR-package`](https://bnaras.github.io/deconvolveR/reference/deconvolveR-package.md)
+  : R package for Empirical Bayes \\g\\-modeling using exponential
+  families.
+- [`disjointTheta`](https://bnaras.github.io/deconvolveR/reference/disjointTheta.md)
+  : A set of \\\Theta\\ values that have a bimodal distribution for
+  testing
+- [`surg`](https://bnaras.github.io/deconvolveR/reference/surg.md) :
+  Intestinal surgery data involving 844 cancer patients. The data
+  consists of pairs (\\n_i\\, \\s_i\\) where \\n_i\\ is the number of
+  satellites removed and \\s_i\\ is the number of satellites found to be
+  malignant.
+
+# Articles
+
+### All vignettes
+
+- [Empirical Bayes
+  Deconvolution](https://bnaras.github.io/deconvolveR/articles/deconvolution.md):
