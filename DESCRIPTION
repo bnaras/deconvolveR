@@ -1,6 +1,6 @@
 Package: deconvolveR
 Title: Empirical Bayes Estimation Strategies
-Version: 1.2-1
+Version: 1.2-2
 VignetteBuilder: knitr
 Suggests: cowplot, ggplot2, knitr, rmarkdown
 Authors@R: c(person("Bradley", "Efron", role=c("aut"),
@@ -23,4 +23,4 @@ LazyData: true
 Imports:
     splines,
     stats
-RoxygenNote: 7.1.0
+Config/roxygen2/version: 8.0.0

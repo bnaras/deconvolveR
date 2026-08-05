@@ -5,9 +5,6 @@
 #' paper reference below and this package includes a vignette
 #' containing a number of examples.
 #'
-#' @docType package
-#' @name deconvolveR-package
-#'
 #' @references Bradley Efron. Empirical Bayes Deconvolution
 #'     Estimates. Biometrika 103(1), 1-20, ISSN
 #'     0006-3444. doi:10.1093/biomet/asv068.
@@ -19,7 +16,7 @@
 #'     Efron. deconvolveR: A G-Modeling Program for Deconvolution and
 #'     Empirical Bayes Estimation. doi:10.18637/jss.v094.i11
 #'
-NULL
+"_PACKAGE"
 
 #' Shakespeare word counts in the entire canon: 14,376 distinct words
 #' appeared exactly once, 4343 words appeared twice etc.
