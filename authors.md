@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/bnaras/deconvolveR/blob/master/inst/CITATION)
+[`inst/CITATION`](https://github.com/bnaras/deconvolveR/blob/v1.2.2/inst/CITATION)
 
 Narasimhan B, Efron B (2020). “deconvolveR: A `G`-Modeling Program for
 Deconvolution and Empirical Bayes Estimation.” *Journal of Statistical

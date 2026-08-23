@@ -2,6 +2,8 @@
 
 ## deconvolveR 1.2-2
 
+CRAN release: 2026-08-23
+
 - Fixed documentation markup flagged by CRAN (`checkRd` “Lost braces”
   NOTE in `deconv.Rd`)
 - Switched CI from Travis to GitHub Actions; pkgdown site is now built
